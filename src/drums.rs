@@ -1,10 +1,11 @@
 use std::sync::Arc;
 use truce::prelude::*;
 mod samples;
+use crate::editor::editor;
 use crate::XrossDrumsEmulatorParams;
 use samples::DrumsSamples;
 pub struct XrossDrumsEmulator {
-    samples: Arc<DrumsSamples>,
+    samples: Arc<&'static DrumsSamples>,
     params: Arc<XrossDrumsEmulatorParams>,
 }
 
@@ -35,5 +36,11 @@ impl XrossDrumsEmulator {
             }
         }
         ProcessStatus::Normal
+    }
+    pub fn params(&self) -> Arc<XrossDrumsEmulatorParams> {
+        self.params.clone()
+    }
+    pub fn editor(&self) -> Box<dyn Editor> {
+        Box::new(editor(self.params()))
     }
 }

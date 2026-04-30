@@ -1,5 +1,6 @@
 use truce::prelude::*;
 mod drums;
+mod editor;
 mod params;
 mod plugin;
 pub use drums::*;

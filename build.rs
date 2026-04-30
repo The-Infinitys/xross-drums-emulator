@@ -1,26 +1,25 @@
+use quote::{format_ident, quote};
 use std::collections::BTreeSet;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 fn main() {
     truce_build::emit_plugin_env();
 
-    let out_dir = env::var_os("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("samples_data.rs");
-
+    let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+    let dest_path = out_dir.join("samples_data.rs");
     let samples_root = Path::new("samples");
 
-    // Discover all kits and sample names
     let mut kits = BTreeSet::new();
     let mut sample_names = BTreeSet::new();
 
+    // --- データ収集 ---
     if let Ok(entries) = fs::read_dir(samples_root) {
         for entry in entries.flatten() {
             if entry.path().is_dir() {
                 let kit_name = entry.file_name().into_string().unwrap();
-                kits.insert(kit_name.clone());
-
+                kits.insert(kit_name);
                 if let Ok(sample_entries) = fs::read_dir(entry.path()) {
                     for sample_entry in sample_entries.flatten() {
                         if sample_entry
@@ -43,31 +42,35 @@ fn main() {
         }
     }
 
-    let mut code = String::new();
+    // --- 構造体定義のトークン生成 ---
+    let sample_idents: Vec<_> = sample_names
+        .iter()
+        .map(|n| format_ident!("{}", n))
+        .collect();
+    let kit_idents: Vec<_> = kits.iter().map(|k| format_ident!("{}", k)).collect();
 
-    // Generate DrumKitData struct
-    code.push_str("pub struct DrumKitData {\n");
-    for name in &sample_names {
-        code.push_str(&format!("    pub {}: &'static [f32],\n", name));
-    }
-    code.push_str("}\n\n");
+    let struct_definitions = quote! {
+        pub struct DrumKitData {
+            #( pub #sample_idents: &'static [f32], )*
+        }
 
-    // Generate DrumsSamplesData struct
-    code.push_str("pub struct DrumsSamplesData {\n");
+        #[repr(C, align(4))]
+        pub struct DrumsSamplesData {
+            #( pub #kit_idents: DrumKitData, )*
+        }
+    };
+
+    // --- 実体データのトークン生成 ---
+    let mut kit_fields = Vec::new();
+
     for kit in &kits {
-        code.push_str(&format!("    pub {}: DrumKitData,\n", kit));
-    }
-    code.push_str("}\n\n");
-
-    // Generate SAMPLES constant
-    code.push_str("pub const SAMPLES: DrumsSamplesData = DrumsSamplesData {\n");
-    for kit in &kits {
-        code.push_str(&format!("    {}: DrumKitData {{\n", kit));
+        let mut sample_fields = Vec::new();
         for name in &sample_names {
+            let field_ident = format_ident!("{}", name);
             let wav_path = samples_root.join(kit).join(format!("{}.wav", name));
+
             if wav_path.exists() {
-                let mut reader = hound::WavReader::open(&wav_path)
-                    .expect(&format!("Failed to open {:?}", wav_path));
+                let mut reader = hound::WavReader::open(&wav_path).expect("Wav open error");
                 let spec = reader.spec();
                 let mut samples: Vec<f32> = match spec.sample_format {
                     hound::SampleFormat::Float => {
@@ -82,31 +85,81 @@ fn main() {
                     }
                 };
 
-                // Enhanced trimming: handle -0.0 and extremely small values
-                // We search for the last position where the absolute value is significantly above zero.
-                if let Some(last_pos) = samples.iter().rposition(|&s| s.abs() > 1e-6) {
-                    let end = (last_pos + 1).saturating_sub(100);
-                    samples.truncate(end);
-                } else {
-                    // If the entire sample is silence, empty it
+                // 無音カット（ロジックはそのまま維持）
+                let threshold = 1e-6;
+                let silence_limit = 1024;
+                let mut last_active_index = 0;
+                let mut consecutive_silence = 0;
+                for (i, &sample) in samples.iter().enumerate() {
+                    if sample.abs() > threshold {
+                        last_active_index = i;
+                        consecutive_silence = 0;
+                    } else {
+                        consecutive_silence += 1;
+                        if consecutive_silence >= silence_limit {
+                            break;
+                        }
+                    }
+                }
+                if last_active_index == 0 && samples.first().map_or(true, |&s| s.abs() <= threshold)
+                {
                     samples.clear();
+                } else {
+                    samples.truncate(last_active_index + 1);
                 }
 
-                code.push_str(&format!("        {}: &[\n", name));
-                for s in samples {
-                    code.push_str(&format!("            {:?},\n", s));
-                }
-                code.push_str("        ],\n");
+                // バイナリ書き出し (ここは従来通り。build.rs自身が書き込むためには絶対パスが必要)
+                let bin_filename = format!("{}_{}.bin", kit, name);
+                let bin_path = out_dir.join(&bin_filename);
+                let bytes: &[u8] = unsafe {
+                    std::slice::from_raw_parts(samples.as_ptr() as *const u8, samples.len() * 4)
+                };
+                fs::write(&bin_path, bytes).unwrap();
+
+                // --- ここから修正 ---
+                let sample_count = samples.len();
+
+                // 生成されるソースコード内で env!("OUT_DIR") を使わせる
+                sample_fields.push(quote! {
+                    #field_ident: unsafe {
+                        #[repr(C, align(4))]
+                        struct Aligned<const N: usize>([u8; N]);
+
+                        // コンパイル時に環境変数からパスを組み立てるように出力
+                        static ALIGNED: &Aligned<{ include_bytes!(concat!(env!("OUT_DIR"), "/", #bin_filename)).len() }> =
+                            &Aligned(*include_bytes!(concat!(env!("OUT_DIR"), "/", #bin_filename)));
+
+                        std::slice::from_raw_parts(ALIGNED.0.as_ptr() as *const f32, #sample_count)
+                    }
+                });
             } else {
-                // If a sample is missing in a kit, provide an empty slice
-                code.push_str(&format!("        {}: &[],\n", name));
+                sample_fields.push(quote! { #field_ident: &[] });
             }
         }
-        code.push_str("    },\n");
-    }
-    code.push_str("};\n");
 
-    fs::write(&dest_path, code).unwrap();
+        let kit_ident = format_ident!("{}", kit);
+        kit_fields.push(quote! {
+            #kit_ident: DrumKitData {
+                #(#sample_fields,)*
+            }
+        });
+    }
+
+    // --- 全体の組み立て ---
+    let final_token_stream = quote! {
+        #struct_definitions
+
+        pub const SAMPLES: DrumsSamplesData = DrumsSamplesData {
+            #(#kit_fields,)*
+        };
+    };
+
+    // --- Pretty Print & Write ---
+    let syntax_tree = syn::parse2(final_token_stream).unwrap();
+    let formatted_code = prettyplease::unparse(&syntax_tree);
+
+    fs::write(&dest_path, formatted_code).unwrap();
+
     println!("cargo:rerun-if-changed=samples");
     println!("cargo:rerun-if-changed=build.rs");
 }

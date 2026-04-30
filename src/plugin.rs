@@ -15,4 +15,7 @@ impl PluginLogic for XrossDrumsEmulator {
     ) -> ProcessStatus {
         self.process(buffer, events, context)
     }
+    fn custom_editor(&self) -> Option<Box<dyn Editor>> {
+        Some(self.editor())
+    }
 }
