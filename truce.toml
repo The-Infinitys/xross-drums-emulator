@@ -1,0 +1,13 @@
+[vendor]
+name = "My Company"
+id = "com.mycompany"
+url = "https://example.com"
+au_manufacturer = "MCom"
+
+[[plugin]]
+name = "XrossDrumsEmulator"
+bundle_id = "xross-drums-emulator"
+crate = "xross-drums-emulator"
+category = "effect"
+fourcc = "XDEm"
+au_tag = "Effects"
