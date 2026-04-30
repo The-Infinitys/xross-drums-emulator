@@ -1,14 +1,17 @@
 use std::sync::Arc;
 use truce::prelude::*;
-
+mod samples;
 use crate::XrossDrumsEmulatorParams;
+use samples::DrumsSamples;
 pub struct XrossDrumsEmulator {
+    samples: Arc<DrumsSamples>,
     params: Arc<XrossDrumsEmulatorParams>,
 }
 
 impl XrossDrumsEmulator {
     pub fn new(params: Arc<XrossDrumsEmulatorParams>) -> Self {
-        Self { params }
+        let samples = Arc::new(DrumsSamples::new());
+        Self { samples, params }
     }
 }
 

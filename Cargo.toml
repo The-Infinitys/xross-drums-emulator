@@ -45,6 +45,7 @@ truce-test = { git = "https://github.com/truce-audio/truce", tag = "v0.18.4" }
 # rustc fires `unexpected_cfgs` warnings for every format this
 # crate doesn't declare.
 [build-dependencies]
+hound = "3.5.1"
 truce-build = { git = "https://github.com/truce-audio/truce", tag = "v0.18.4" }
 
 # Custom profile for `cargo truce install --shell`. The shell-mode
