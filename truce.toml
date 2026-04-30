@@ -1,13 +1,13 @@
 [vendor]
-name = "My Company"
-id = "com.mycompany"
-url = "https://example.com"
-au_manufacturer = "MCom"
+name = "The Infinitys"
+id = "org.infinite"
+url = "https://github.com/The-Infinitys/xross-drums-emulator"
+au_manufacturer = "Infi"
 
 [[plugin]]
 name = "XrossDrumsEmulator"
 bundle_id = "xross-drums-emulator"
 crate = "xross-drums-emulator"
-category = "effect"
+category = "instrument"
 fourcc = "XDEm"
-au_tag = "Effects"
+au_tag = "MIDI"
