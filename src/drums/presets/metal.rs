@@ -5,6 +5,7 @@ pub const PRESET: DrumPreset = DrumPreset {
     description:
         "Ultra-precise modern metal. Extreme scoop, clinical attack, and massive low-end focus.",
     kick: PartPreset {
+        pan: 0.0,
         heavy: 100.0,
         light: 0.0,
         medium: 0.0,
@@ -38,6 +39,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: -10.0,
     },
     snare: PartPreset {
+        pan: 0.0,
         heavy: 100.0,
         light: 0.0,
         medium: 0.0,
@@ -71,6 +73,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 6.0,
     },
     hihat: PartPreset {
+        pan: -60.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,
@@ -104,6 +107,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: -2.0,
     },
     tom_h: PartPreset {
+        pan: -40.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,
@@ -137,6 +141,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 1.0,
     },
     tom_l: PartPreset {
+        pan: 0.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,
@@ -170,6 +175,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 1.0,
     },
     tom_f: PartPreset {
+        pan: 40.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,
@@ -203,6 +209,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 1.0,
     },
     crash: PartPreset {
+        pan: -70.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,
@@ -236,6 +243,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: -2.0,
     },
     ride: PartPreset {
+        pan: 70.0,
         heavy: 80.0,
         light: 0.0,
         medium: 0.0,

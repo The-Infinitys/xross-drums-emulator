@@ -4,6 +4,7 @@ pub const PRESET: DrumPreset = DrumPreset {
     name: "ROCK",
     description: "Punchy and polished. Enhanced dynamics with clear snap and solid weight.",
     kick: PartPreset {
+        pan: 0.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -37,6 +38,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: -4.0,
     },
     snare: PartPreset {
+        pan: 5.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -70,6 +72,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 3.0,
     },
     hihat: PartPreset {
+        pan: -40.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -103,6 +106,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 0.0,
     },
     tom_h: PartPreset {
+        pan: -30.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -136,6 +140,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 2.0,
     },
     tom_l: PartPreset {
+        pan: 0.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -169,6 +174,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 2.0,
     },
     tom_f: PartPreset {
+        pan: 30.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -202,6 +208,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 2.0,
     },
     crash: PartPreset {
+        pan: -50.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,
@@ -235,6 +242,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 0.0,
     },
     ride: PartPreset {
+        pan: 50.0,
         heavy: 0.0,
         light: 100.0,
         medium: 0.0,

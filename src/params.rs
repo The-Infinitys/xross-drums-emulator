@@ -23,7 +23,10 @@ pub struct XrossDrumsEmulatorParams {
 }
 impl XrossDrumsEmulatorParams {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            parts: PartsParams::new(),
+            master: MasterParams::default(),
+        }
     }
 }
 
@@ -47,8 +50,51 @@ pub struct PartsParams {
     pub tom_f: PartParams,
 }
 
-#[derive(Params, Default)]
+impl PartsParams {
+    pub fn new() -> Self {
+        let mut p = Self::default();
+        p.kick = PartParams::new_kick();
+        p.snare = PartParams::new_snare();
+        p.hihat = PartParams::new_hihat();
+        p
+    }
+}
+
+impl PartParams {
+    pub fn new_kick() -> Self {
+        let mut p = Self::default();
+        let val = 60.0;
+        p.electric.freq.set_value(val);
+        p.electric.freq.info.default_plain = val;
+        p
+    }
+    pub fn new_snare() -> Self {
+        let mut p = Self::default();
+        let val = 200.0;
+        p.electric.freq.set_value(val);
+        p.electric.freq.info.default_plain = val;
+        p
+    }
+    pub fn new_hihat() -> Self {
+        let mut p = Self::default();
+        let val = 8000.0;
+        p.electric.freq.set_value(val);
+        p.electric.freq.info.default_plain = val;
+        p
+    }
+    pub fn new_crash() -> Self {
+        Self::default()
+    }
+    pub fn new_ride() -> Self {
+        Self::default()
+    }
+    pub fn new_tom() -> Self {
+        Self::default()
+    }
+}
+#[derive(Params)]
 pub struct PartParams {
+    pub pan: PanParam,
     #[nested]
     pub electric: ElectricParams,
     #[nested]
@@ -60,6 +106,18 @@ pub struct PartParams {
     #[nested]
     pub saturation: SaturationParams,
 }
+impl Default for PartParams {
+    fn default() -> Self {
+        Self {
+            pan: PanParam::new(),
+            electric: ElectricParams::default(),
+            eq: EqualizerParams::default(),
+            comp: CompressorParams::default(),
+            transient: TransientParams::default(),
+            saturation: SaturationParams::default(),
+        }
+    }
+}
 
 #[derive(Params, Default)]
 pub struct MasterParams {
@@ -69,4 +127,16 @@ pub struct MasterParams {
     pub comp: CompressorParams,
     #[nested]
     pub clipper: ClipperParams,
+}
+
+#[derive(Params)]
+pub struct PanParam {
+    #[param(
+        name = "Pan",
+        range = "linear(-100.0, 100.0)",
+        default = 0.0,
+        unit = "%",
+        smooth = "linear(20.0)"
+    )]
+    pub pan: FloatParam,
 }

@@ -31,11 +31,12 @@ pub fn norm_to_freq(norm: f32) -> f32 {
     let max_log = 20000.0f32.ln();
     (min_log + norm * (max_log - min_log)).exp()
 }
-
 pub enum FilterType {
     LowShelf,
     HighShelf,
     Peaking,
+    LowPass,  // 追加
+    HighPass, // 追加
 }
 
 pub fn get_filter_gain(
@@ -46,17 +47,29 @@ pub fn get_filter_gain(
     filter_type: FilterType,
     sample_rate: f32,
 ) -> f32 {
-    if gain_db.abs() < 0.01 {
-        return 0.0;
-    }
-
-    let a = 10.0f32.powf(gain_db / 40.0);
     let w0 = 2.0 * PI * f0 / sample_rate;
+    let a = 10.0f32.powf(gain_db / 40.0);
     let cos_w0 = w0.cos();
     let sin_w0 = w0.sin();
     let alpha = sin_w0 / (2.0 * q.max(0.01));
 
     let (b0, b1, b2, a0, a1, a2) = match filter_type {
+        FilterType::LowPass => (
+            (1.0 - cos_w0) / 2.0,
+            1.0 - cos_w0,
+            (1.0 - cos_w0) / 2.0,
+            1.0 + alpha,
+            -2.0 * cos_w0,
+            1.0 - alpha,
+        ),
+        FilterType::HighPass => (
+            (1.0 + cos_w0) / 2.0,
+            -(1.0 + cos_w0),
+            (1.0 + cos_w0) / 2.0,
+            1.0 + alpha,
+            -2.0 * cos_w0,
+            1.0 - alpha,
+        ),
         FilterType::LowShelf => {
             let a_plus = a + 1.0;
             let a_minus = a - 1.0;
@@ -93,6 +106,20 @@ pub fn get_filter_gain(
         }
     };
 
+    compute_magnitude(f, sample_rate, b0, b1, b2, a0, a1, a2)
+}
+
+// 既存の計算ロジックを分離して再利用
+fn compute_magnitude(
+    f: f32,
+    sample_rate: f32,
+    b0: f32,
+    b1: f32,
+    b2: f32,
+    a0: f32,
+    a1: f32,
+    a2: f32,
+) -> f32 {
     let w = 2.0 * PI * f / sample_rate;
     let (sw, cw) = w.sin_cos();
     let (sw2, cw2) = (2.0 * w).sin_cos();

@@ -33,7 +33,7 @@ pub struct ClipperParams {
     pub oversampling: EnumParam<OversamplingMode>,
 }
 
-#[derive(ParamEnum)]
+#[derive(ParamEnum, Debug)]
 pub enum OversamplingMode {
     #[name = "Off"]
     None,

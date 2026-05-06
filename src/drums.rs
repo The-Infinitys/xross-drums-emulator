@@ -313,9 +313,15 @@ impl XrossDrumsEmulator {
 
         // エフェクト適用
         combined = fx.process(combined, params, sample_rate);
+        combined *= 256.0;
 
-        *out_l += combined;
-        *out_r += combined;
+        // パンニング
+        let pan = params.pan.pan.value() as f32 / 100.0;
+        let left_gain = (1.0 - pan).clamp(0.0, 1.0);
+        let right_gain = (1.0 + pan).clamp(0.0, 1.0);
+
+        *out_l += combined * left_gain;
+        *out_r += combined * right_gain;
 
         if state.current_sample > (sample_rate * 5.0) as usize {
             state.stop();

@@ -5,6 +5,7 @@ pub const PRESET: DrumPreset = DrumPreset {
     description:
         "High-fidelity organic sound. Focus on resonance, stick definition, and wide dynamics.",
     kick: PartPreset {
+        pan: 0.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -38,6 +39,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 2.0,
     },
     snare: PartPreset {
+        pan: 10.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -71,6 +73,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 3.0,
     },
     hihat: PartPreset {
+        pan: -30.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -104,6 +107,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 1.0,
     },
     tom_h: PartPreset {
+        pan: -20.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -137,6 +141,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 5.0,
     },
     tom_l: PartPreset {
+        pan: 0.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -170,6 +175,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 5.0,
     },
     tom_f: PartPreset {
+        pan: 20.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -203,6 +209,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 5.0,
     },
     crash: PartPreset {
+        pan: -40.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,
@@ -236,6 +243,7 @@ pub const PRESET: DrumPreset = DrumPreset {
         trans_sustain: 2.0,
     },
     ride: PartPreset {
+        pan: 40.0,
         heavy: 0.0,
         light: 0.0,
         medium: 100.0,

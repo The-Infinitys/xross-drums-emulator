@@ -3,13 +3,14 @@ use crate::params::XrossDrumsEmulatorParams;
 use std::sync::Arc;
 
 mod background;
+mod logo;
 mod pad;
 mod presets;
 mod settings;
 mod tabs;
-
 use background::Background;
-use egui::{Color32, Frame, RichText};
+use egui::{Color32, Frame};
+use logo::Logo;
 use pad::PadGrid;
 use presets::PresetsUI;
 use settings::Settings;
@@ -45,15 +46,10 @@ pub fn editor(params: Arc<XrossDrumsEmulatorParams>, events: Arc<NoteEvents>) ->
 
                 // --- 中面: メインUIレイアウト ---
                 ui.vertical_centered(|ui| {
-                    ui.add_space(20.0);
+                    ui.add_space(10.0);
 
                     // タイトル表示
-                    ui.heading(
-                        RichText::new("XROSS DRUMS")
-                            .size(40.0)
-                            .strong()
-                            .color(Color32::WHITE),
-                    );
+                    Logo::draw(ui, 60.0);
 
                     ui.add_space(10.0);
 

@@ -51,7 +51,7 @@ pub struct SaturationParams {
     pub output_gain: FloatParam,
 }
 
-#[derive(ParamEnum)]
+#[derive(ParamEnum, Debug)]
 pub enum SaturationType {
     #[name = "Soft S-Curve"]
     Soft,

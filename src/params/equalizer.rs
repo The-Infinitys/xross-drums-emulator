@@ -30,33 +30,12 @@ pub struct EqBandParams {
     pub q: FloatParam,
 }
 
-/// 2. ハイパス/ローパス専用バンド（Gainなし）
-#[derive(Params)]
-pub struct FilterCutoffParams {
-    #[param(
-        name = "Freq",
-        range = "log(20, 20000)",
-        default = 20.0,
-        unit = "Hz",
-        smooth = "exp(5)"
-    )]
-    pub freq: FloatParam,
-
-    #[param(
-        name = "Q",
-        range = "linear(0.1, 2.0)",
-        default = 0.707,
-        smooth = "linear(20)"
-    )]
-    pub q: FloatParam,
-}
-
 /// 3. メイン構造体
 #[derive(Params)]
 pub struct EqualizerParams {
     // 300-309: HPF
     #[nested]
-    pub hp: FilterCutoffParams,
+    pub hp: EqBandParams,
 
     // 310-319: Low Band
     #[nested]
@@ -72,17 +51,56 @@ pub struct EqualizerParams {
 
     // 340-349: LPF
     #[nested]
-    pub lp: FilterCutoffParams,
+    pub lp: EqBandParams,
 }
-
 impl EqualizerParams {
     pub fn new() -> Self {
+        let mut hp = EqBandParams::new();
+        hp.freq.info.default_plain = 20.0;
+        hp.freq.set_value(20.0);
+        hp.q.info.default_plain = 0.707;
+        hp.q.set_value(0.707);
+        hp.gain.info.default_plain = 0.0; // HPFのゲインリセットは0(中央)が扱いやすい
+        hp.gain.set_value(-12.0); // 初期位置だけ下げる
+
+        let mut low = EqBandParams::new();
+        low.freq.info.default_plain = 100.0;
+        low.freq.set_value(100.0);
+        low.gain.info.default_plain = 0.0;
+        low.gain.set_value(0.0);
+        low.q.info.default_plain = 0.707;
+        low.q.set_value(0.707);
+
+        let mut mid = EqBandParams::new();
+        mid.freq.info.default_plain = 1000.0;
+        mid.freq.set_value(1000.0);
+        mid.gain.info.default_plain = 0.0;
+        mid.gain.set_value(0.0);
+        mid.q.info.default_plain = 1.0;
+        mid.q.set_value(1.0);
+
+        let mut high = EqBandParams::new();
+        high.freq.info.default_plain = 5000.0;
+        high.freq.set_value(5000.0);
+        high.gain.info.default_plain = 0.0;
+        high.gain.set_value(0.0);
+        high.q.info.default_plain = 0.707;
+        high.q.set_value(0.707);
+
+        let mut lp = EqBandParams::new();
+        lp.freq.info.default_plain = 20000.0;
+        lp.freq.set_value(20000.0);
+        lp.q.info.default_plain = 0.707;
+        lp.q.set_value(0.707);
+        lp.gain.info.default_plain = 0.0;
+        lp.gain.set_value(-12.0); // 初期位置だけ下げる
+
         Self {
-            hp: FilterCutoffParams::new(),
-            low: EqBandParams::new(),
-            mid: EqBandParams::new(),
-            high: EqBandParams::new(),
-            lp: FilterCutoffParams::new(),
+            hp,
+            low,
+            mid,
+            high,
+            lp,
         }
     }
 }

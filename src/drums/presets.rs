@@ -25,6 +25,7 @@ pub struct EqPreset {
 }
 
 pub struct PartPreset {
+    pub pan: f32,
     pub heavy: f32,
     pub light: f32,
     pub medium: f32,
@@ -76,6 +77,9 @@ impl DrumPreset {
     }
 
     fn apply_part(&self, part: &PartParams, p: &PartPreset) {
+        // Pan
+        part.pan.pan.set_value(p.pan as f64);
+
         // Levels
         part.electric.heavy_level.set_value(p.heavy as f64);
         part.electric.light_level.set_value(p.light as f64);
