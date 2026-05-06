@@ -1,16 +1,18 @@
 use std::sync::Arc;
 use truce::prelude::*;
 
+mod context;
 mod effects;
 pub mod presets;
 pub mod samples;
 mod state;
 mod synth;
 
+use crate::XrossDrumsEmulatorParams;
+use crate::drums::context::PartProcessingContext;
 use crate::editor::editor;
 use crate::events::NoteEvents;
 use crate::params::PartParams;
-use crate::XrossDrumsEmulatorParams;
 use effects::EffectChain;
 use samples::DrumsSamples;
 use state::{DrumState, HiHatMode, PartState};
@@ -118,125 +120,87 @@ impl XrossDrumsEmulator {
             let p = &self.params.parts;
             let samples = &self.samples;
 
-            // 各パーツの処理
-            // &mut self.state.xxx と &mut self.xxx_fx は別々のフィールドなので同時に借用可能です
-            Self::process_single_part(
+            let mut run_part =
+                |id: PartId, state: &mut PartState, params: &PartParams, fx: &mut EffectChain| {
+                    Self::process_single_part(PartProcessingContext {
+                        part_id: id,
+                        state,
+                        params,
+                        fx,
+                        samples,
+                        out_l: &mut left,
+                        out_r: &mut right,
+                        sample_rate,
+                    })
+                };
+
+            run_part(
                 PartId::Kick,
                 &mut self.state.kick,
                 &p.kick,
                 &mut self.kick_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::Snare,
                 &mut self.state.snare_drum,
                 &p.snare,
                 &mut self.snare_drum_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::Rimshot,
                 &mut self.state.rimshot,
                 &p.snare,
                 &mut self.rimshot_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::Sidestick,
                 &mut self.state.sidestick,
                 &p.snare,
                 &mut self.sidestick_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::TomHigh,
                 &mut self.state.tom_high,
                 &p.tom_h,
                 &mut self.tom_high_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::TomLow,
                 &mut self.state.tom_low,
                 &p.tom_l,
                 &mut self.tom_low_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::TomFloor,
                 &mut self.state.tom_floor,
                 &p.tom_f,
                 &mut self.tom_floor_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
 
-            // ハイハットのモード判定
             let hh_id = match self.state.hihat_mode {
                 HiHatMode::Closed => PartId::HiHatClosed,
                 HiHatMode::Open => PartId::HiHatOpen,
                 HiHatMode::Pedal => PartId::HiHatPedal,
             };
-            Self::process_single_part(
-                hh_id,
-                &mut self.state.hihat,
-                &p.hihat,
-                &mut self.hihat_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
-            );
+            run_part(hh_id, &mut self.state.hihat, &p.hihat, &mut self.hihat_fx);
 
-            Self::process_single_part(
+            run_part(
                 PartId::Crash,
                 &mut self.state.crash_cymbal,
                 &p.crash,
                 &mut self.crash_cymbal_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::Ride,
                 &mut self.state.ride_cymbal,
                 &p.ride,
                 &mut self.ride_cymbal_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
-            Self::process_single_part(
+            run_part(
                 PartId::RideBell,
                 &mut self.state.ride_bell,
                 &p.ride,
                 &mut self.ride_bell_fx,
-                samples,
-                &mut left,
-                &mut right,
-                sample_rate,
             );
 
             buffer.output(0)[i] = left;
@@ -249,24 +213,14 @@ impl XrossDrumsEmulator {
     }
 
     /// 所有権問題を解決するため、selfを引数に取らず、必要なコンポーネントのみを渡す関連関数にリファクタリング
-    fn process_single_part(
-        part_id: PartId,
-        state: &mut PartState,
-        params: &PartParams,
-        fx: &mut EffectChain,
-        samples: &DrumsSamples,
-        out_l: &mut f32,
-        out_r: &mut f32,
-        sample_rate: f32,
-    ) {
-        if !state.is_playing() {
+    fn process_single_part(ctx: PartProcessingContext) {
+        if !ctx.state.is_playing() {
             return;
         }
 
         let mut combined = 0.0;
 
-        // enumからサンプル名へのマッピング
-        let sample_name = match part_id {
+        let sample_name = match ctx.part_id {
             PartId::Kick => "bass_drum",
             PartId::Snare => "snare_drum",
             PartId::Rimshot => "rimshot",
@@ -282,49 +236,44 @@ impl XrossDrumsEmulator {
             PartId::RideBell => "ride_bell",
         };
 
-        // 1. サンプルレイヤーの合成
         for (kit_name, level_param) in [
-            ("heavy", &params.electric.heavy_level),
-            ("light", &params.electric.light_level),
-            ("medium", &params.electric.medium_level),
+            ("heavy", &ctx.params.electric.heavy_level),
+            ("light", &ctx.params.electric.light_level),
+            ("medium", &ctx.params.electric.medium_level),
         ] {
-            let level = level_param.value() as f32 / 100.0;
-            if level > 0.0 {
-                if let Some(sample_data) = samples.get_sample_data(kit_name, sample_name) {
-                    if state.current_sample < sample_data.len() {
-                        combined += sample_data[state.current_sample] * state.velocity * level;
-                    }
-                }
+            let level = level_param.value() / 100.0;
+            if level > 0.0
+                && let Some(sample_data) = ctx.samples.get_sample_data(kit_name, sample_name)
+                && ctx.state.current_sample < sample_data.len()
+            {
+                combined += sample_data[ctx.state.current_sample] * ctx.state.velocity * level;
             }
         }
 
-        // 2. シンセサイザー音の合成
-        let elec_level = params.electric.electric_level.value() as f32 / 100.0;
+        let elec_level = ctx.params.electric.electric_level.value() / 100.0;
         if elec_level > 0.0 {
             combined += DrumSynth::process(
                 sample_name,
-                &params.electric,
-                state.current_sample,
-                state.velocity,
-                sample_rate,
-                &mut state.phase,
+                &ctx.params.electric,
+                ctx.state.current_sample,
+                ctx.state.velocity,
+                ctx.sample_rate,
+                &mut ctx.state.phase,
             ) * elec_level;
         }
 
-        // エフェクト適用
-        combined = fx.process(combined, params, sample_rate);
+        combined = ctx.fx.process(combined, ctx.params, ctx.sample_rate);
         combined *= 256.0;
 
-        // パンニング
-        let pan = params.pan.pan.value() as f32 / 100.0;
-        let left_gain = (1.0 - pan).clamp(0.0, 1.0);
-        let right_gain = (1.0 + pan).clamp(0.0, 1.0);
+        let pan = ctx.params.pan.pan.value() / 100.0;
+        let left_gain = (1.0f32 - pan).clamp(0.0, 1.0);
+        let right_gain = (1.0f32 + pan).clamp(0.0, 1.0);
 
-        *out_l += combined * left_gain;
-        *out_r += combined * right_gain;
+        *ctx.out_l += combined * left_gain;
+        *ctx.out_r += combined * right_gain;
 
-        if state.current_sample > (sample_rate * 5.0) as usize {
-            state.stop();
+        if ctx.state.current_sample > (ctx.sample_rate * 5.0) as usize {
+            ctx.state.stop();
         }
     }
 
@@ -410,11 +359,7 @@ impl XrossDrumsEmulator {
 
     fn consume_if_any(&self, trigger: &crate::events::DrumTrigger) -> Option<u8> {
         let v = trigger.consume();
-        if v > 0 {
-            Some(v)
-        } else {
-            None
-        }
+        if v > 0 { Some(v) } else { None }
     }
 
     pub fn params(&self) -> Arc<XrossDrumsEmulatorParams> {

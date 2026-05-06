@@ -7,7 +7,7 @@ mod knob;
 mod tabs;
 mod widgets;
 
-use tabs::{SelectedTab, DRUM_TABS};
+use tabs::{DRUM_TABS, SelectedTab};
 
 use crate::XrossDrumsEmulatorParams;
 

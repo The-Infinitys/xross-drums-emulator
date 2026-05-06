@@ -1,5 +1,5 @@
 use crate::utils::FloatParamNormalizedExt;
-use egui::{vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget};
+use egui::{Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget, vec2};
 use std::f32::consts::PI;
 
 pub struct SingleKnob<'a> {

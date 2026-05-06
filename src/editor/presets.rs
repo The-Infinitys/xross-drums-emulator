@@ -1,5 +1,5 @@
-use crate::drums::presets::{jazz, metal, rock};
 use crate::XrossDrumsEmulatorParams;
+use crate::drums::presets::{jazz, metal, rock};
 use egui::{self, Color32, RichText};
 use std::sync::Arc;
 

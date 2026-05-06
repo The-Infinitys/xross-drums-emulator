@@ -67,7 +67,7 @@ impl Polyhedron {
     }
 
     fn init(&mut self, w: f32, h: f32, first_time: bool, rng: &mut StdRng) {
-        let is_core = self.index % 3 == 0;
+        let is_core = self.index.is_multiple_of(3);
         let screen_min = w.min(h);
 
         if is_core {
@@ -89,7 +89,11 @@ impl Polyhedron {
     }
 
     fn update(&mut self, w: f32, h: f32, rng: &mut StdRng) {
-        let speed_base = if self.index % 3 == 0 { 1.2 } else { 0.6 };
+        let speed_base = if self.index.is_multiple_of(3) {
+            1.2
+        } else {
+            0.6
+        };
         self.z -= speed_base;
         self.rot_x += self.v_rot_x;
         self.rot_y += self.v_rot_y;

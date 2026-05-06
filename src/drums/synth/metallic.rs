@@ -14,8 +14,8 @@ pub fn process_cymbal(name: &str, params: &ElectricParams, pos: usize, vel: f32,
         _ => (1.0, 1.0),
     };
 
-    let env = SynthUtils::exp_env(t, params.noise_decay.value() as f32 * decay_mult);
-    let f_base = params.freq.value() as f32;
+    let env = SynthUtils::exp_env(t, params.noise_decay.value() * decay_mult);
+    let f_base = params.freq.value();
 
     // 1. FM合成による「金属の光沢感」
     let mod_freq = f_base * 1.618; // 黄金比でうねりを作る
@@ -50,5 +50,5 @@ pub fn process_cymbal(name: &str, params: &ElectricParams, pos: usize, vel: f32,
         signal += stick_click * 0.3;
     }
 
-    signal * env * params.noise_level.value() as f32 * 0.4 * vel
+    signal * env * params.noise_level.value() * 0.4 * vel
 }

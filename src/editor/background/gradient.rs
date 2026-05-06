@@ -1,6 +1,6 @@
 use egui::{
-    epaint::{Mesh, Shape, Vertex},
     Color32, Pos2, Rect,
+    epaint::{Mesh, Shape, Vertex},
 };
 use std::f32::consts::TAU;
 

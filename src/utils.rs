@@ -110,6 +110,7 @@ pub fn get_filter_gain(
 }
 
 // 既存の計算ロジックを分離して再利用
+#[allow(clippy::too_many_arguments)]
 fn compute_magnitude(
     f: f32,
     sample_rate: f32,

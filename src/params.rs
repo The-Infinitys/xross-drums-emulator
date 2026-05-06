@@ -52,11 +52,12 @@ pub struct PartsParams {
 
 impl PartsParams {
     pub fn new() -> Self {
-        let mut p = Self::default();
-        p.kick = PartParams::new_kick();
-        p.snare = PartParams::new_snare();
-        p.hihat = PartParams::new_hihat();
-        p
+        Self {
+            kick: PartParams::new_kick(),
+            snare: PartParams::new_snare(),
+            hihat: PartParams::new_hihat(),
+            ..Default::default()
+        }
     }
 }
 
@@ -92,7 +93,7 @@ impl PartParams {
         Self::default()
     }
 }
-#[derive(Params)]
+#[derive(Params, Default)]
 pub struct PartParams {
     pub pan: PanParam,
     #[nested]
@@ -105,18 +106,6 @@ pub struct PartParams {
     pub transient: TransientParams,
     #[nested]
     pub saturation: SaturationParams,
-}
-impl Default for PartParams {
-    fn default() -> Self {
-        Self {
-            pan: PanParam::new(),
-            electric: ElectricParams::default(),
-            eq: EqualizerParams::default(),
-            comp: CompressorParams::default(),
-            transient: TransientParams::default(),
-            saturation: SaturationParams::default(),
-        }
-    }
 }
 
 #[derive(Params, Default)]

@@ -2,8 +2,7 @@ use super::{DrumPreset, EqBandPreset, EqPreset, PartPreset, SynthPreset};
 
 pub const PRESET: DrumPreset = DrumPreset {
     name: "JAZZ",
-    description:
-        "High-fidelity organic sound. Focus on resonance, stick definition, and wide dynamics.",
+    description: "High-fidelity organic sound. Focus on resonance, stick definition, and wide dynamics.",
     kick: PartPreset {
         pan: 0.0,
         heavy: 0.0,

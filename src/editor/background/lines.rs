@@ -1,6 +1,6 @@
 use egui::{
-    epaint::{Mesh, Vertex},
     Color32, Pos2, Rect, Shape,
+    epaint::{Mesh, Vertex},
 };
 
 pub struct Lines;

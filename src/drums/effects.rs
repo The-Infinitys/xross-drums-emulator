@@ -50,8 +50,8 @@ impl EffectChain {
 
         // 1. Transient Shaper (Simplified)
         let ts = &params.transient;
-        let att_time = ts.attack_time.value() as f32 / 1000.0;
-        let sus_time = ts.sustain_time.value() as f32 / 1000.0;
+        let att_time = ts.attack_time.value() / 1000.0;
+        let sus_time = ts.sustain_time.value() / 1000.0;
         let alpha_att = (-(1.0 / (sample_rate * att_time))).exp();
         let alpha_sus = (-(1.0 / (sample_rate * sus_time))).exp();
 
@@ -61,25 +61,23 @@ impl EffectChain {
         self.last_envelope = fast_env;
 
         let diff = fast_env - slow_env;
-        let ts_gain = 10.0f32.powf(
-            (diff * ts.attack_gain.value() as f32 + slow_env * ts.sustain_gain.value() as f32)
-                / 20.0,
-        );
+        let ts_gain = 10.0f32
+            .powf((diff * ts.attack_gain.value() + slow_env * ts.sustain_gain.value()) / 20.0);
         x *= ts_gain;
 
         // 2. Saturation
         let sat = &params.saturation;
-        let drive = 10.0f32.powf(sat.drive.value() as f32 / 20.0);
+        let drive = 10.0f32.powf(sat.drive.value() / 20.0);
         let sat_in = x * drive;
         let sat_out = sat_in.tanh(); // Simple soft clipping
-        let mix = sat.mix.value() as f32 / 100.0;
+        let mix = sat.mix.value() / 100.0;
         x = sat_out * mix + x * (1.0 - mix);
-        x *= 10.0f32.powf(sat.output_gain.value() as f32 / 20.0);
+        x *= 10.0f32.powf(sat.output_gain.value() / 20.0);
 
         // 3. Compressor (Simplified)
         let comp = &params.comp;
-        let threshold = 10.0f32.powf(comp.threshold.value() as f32 / 20.0);
-        let ratio = comp.ratio.value() as f32;
+        let threshold = 10.0f32.powf(comp.threshold.value() / 20.0);
+        let ratio = comp.ratio.value();
         let env_comp = x.abs();
         let alpha_comp = (-(1.0 / (sample_rate * 0.01))).exp(); // Fixed 10ms for simplicity
         self.comp_envelope = env_comp.max(self.comp_envelope * alpha_comp);
@@ -90,7 +88,7 @@ impl EffectChain {
             let gain_reduction = 10.0f32.powf(-reduction_db / 20.0);
             x *= gain_reduction;
         }
-        x *= 10.0f32.powf(comp.makeup.value() as f32 / 20.0);
+        x *= 10.0f32.powf(comp.makeup.value() / 20.0);
 
         // 4. EQ
         x = self.apply_eq(x, &params.eq, sample_rate);
@@ -103,9 +101,9 @@ impl EffectChain {
 
         // Low Shelf
         let (b0, b1, b2, a1, a2) = get_coeffs(
-            eq.low.freq.value() as f32,
-            eq.low.gain.value() as f32,
-            eq.low.q.value() as f32,
+            eq.low.freq.value(),
+            eq.low.gain.value(),
+            eq.low.q.value(),
             FilterType::LowShelf,
             sample_rate,
         );
@@ -113,9 +111,9 @@ impl EffectChain {
 
         // Mid Peaking
         let (b0, b1, b2, a1, a2) = get_coeffs(
-            eq.mid.freq.value() as f32,
-            eq.mid.gain.value() as f32,
-            eq.mid.q.value() as f32,
+            eq.mid.freq.value(),
+            eq.mid.gain.value(),
+            eq.mid.q.value(),
             FilterType::Peaking,
             sample_rate,
         );
@@ -123,9 +121,9 @@ impl EffectChain {
 
         // High Shelf
         let (b0, b1, b2, a1, a2) = get_coeffs(
-            eq.high.freq.value() as f32,
-            eq.high.gain.value() as f32,
-            eq.high.q.value() as f32,
+            eq.high.freq.value(),
+            eq.high.gain.value(),
+            eq.high.q.value(),
             FilterType::HighShelf,
             sample_rate,
         );

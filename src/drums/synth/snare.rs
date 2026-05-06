@@ -11,7 +11,7 @@ pub fn process(
     phase: &mut f32,
 ) -> f32 {
     let t = pos as f32 / sr;
-    let freq = params.freq.value() as f32;
+    let freq = params.freq.value();
 
     match name {
         "sidestick" => {
@@ -41,7 +41,7 @@ pub fn process(
         }
         _ => {
             // 通常のスネア & リムショット
-            let decay = params.decay.value() as f32;
+            let decay = params.decay.value();
             let body_env = SynthUtils::exp_env(t, decay * 0.4);
 
             // 1. ボディトーン (2つのサイン波の干渉でスネアの胴鳴りを再現)
@@ -49,13 +49,13 @@ pub fn process(
             let body = (phase.sin() + (*phase * 1.6).sin() * 0.3) * body_env;
 
             // 2. スナッピー (White Noise + High Pass Filter)
-            let noise_decay = params.noise_decay.value() as f32;
+            let noise_decay = params.noise_decay.value();
             let snappy_env = SynthUtils::exp_env(t, noise_decay);
             let mut snappy = SynthUtils::stable_noise(pos);
             if pos > 0 {
                 snappy = SynthUtils::hp_filter(snappy, SynthUtils::stable_noise(pos - 1), 0.7);
             }
-            snappy *= snappy_env * params.noise_level.value() as f32;
+            snappy *= snappy_env * params.noise_level.value();
 
             // 3. リムショットならアタックに鋭いパルスを追加
             let rim_attack = if name == "rimshot" {

@@ -1,5 +1,5 @@
 use crate::params::equalizer::EqualizerParams;
-use crate::utils::{freq_to_norm, get_filter_gain, norm_to_freq, FilterType};
+use crate::utils::{FilterType, freq_to_norm, get_filter_gain, norm_to_freq};
 use egui::{self, Align2, Color32, FontId, Pos2, Rect, Stroke, Vec2};
 use truce::params::FloatParam;
 
@@ -34,41 +34,41 @@ impl EqualizerBox {
                 let mut g = 0.0;
                 g += get_filter_gain(
                     f,
-                    eq.hp.freq.value() as f32,
+                    eq.hp.freq.value(),
                     0.0,
-                    eq.hp.q.value() as f32,
+                    eq.hp.q.value(),
                     FilterType::HighPass,
                     sample_rate,
                 );
                 g += get_filter_gain(
                     f,
-                    eq.low.freq.value() as f32,
-                    eq.low.gain.value() as f32,
-                    eq.low.q.value() as f32,
+                    eq.low.freq.value(),
+                    eq.low.gain.value(),
+                    eq.low.q.value(),
                     FilterType::LowShelf,
                     sample_rate,
                 );
                 g += get_filter_gain(
                     f,
-                    eq.mid.freq.value() as f32,
-                    eq.mid.gain.value() as f32,
-                    eq.mid.q.value() as f32,
+                    eq.mid.freq.value(),
+                    eq.mid.gain.value(),
+                    eq.mid.q.value(),
                     FilterType::Peaking,
                     sample_rate,
                 );
                 g += get_filter_gain(
                     f,
-                    eq.high.freq.value() as f32,
-                    eq.high.gain.value() as f32,
-                    eq.high.q.value() as f32,
+                    eq.high.freq.value(),
+                    eq.high.gain.value(),
+                    eq.high.q.value(),
                     FilterType::HighShelf,
                     sample_rate,
                 );
                 g += get_filter_gain(
                     f,
-                    eq.lp.freq.value() as f32,
+                    eq.lp.freq.value(),
                     0.0,
-                    eq.lp.q.value() as f32,
+                    eq.lp.q.value(),
                     FilterType::LowPass,
                     sample_rate,
                 );
@@ -88,7 +88,7 @@ impl EqualizerBox {
             ui,
             graph_rect,
             &eq.hp.freq,
-            None,
+            &eq.hp.gain,
             &eq.hp.q,
             Color32::from_rgb(255, 100, 100),
             "HPF",
@@ -97,7 +97,7 @@ impl EqualizerBox {
             ui,
             graph_rect,
             &eq.low.freq,
-            Some(&eq.low.gain),
+            &eq.low.gain,
             &eq.low.q,
             Color32::from_rgb(255, 165, 0),
             "LOW",
@@ -106,7 +106,7 @@ impl EqualizerBox {
             ui,
             graph_rect,
             &eq.mid.freq,
-            Some(&eq.mid.gain),
+            &eq.mid.gain,
             &eq.mid.q,
             Color32::from_rgb(0, 255, 127),
             "MID",
@@ -115,7 +115,7 @@ impl EqualizerBox {
             ui,
             graph_rect,
             &eq.high.freq,
-            Some(&eq.high.gain),
+            &eq.high.gain,
             &eq.high.q,
             Color32::from_rgb(180, 100, 255),
             "HIGH",
@@ -124,7 +124,7 @@ impl EqualizerBox {
             ui,
             graph_rect,
             &eq.lp.freq,
-            None,
+            &eq.lp.gain,
             &eq.lp.q,
             Color32::from_rgb(100, 150, 255),
             "LPF",
@@ -150,28 +150,56 @@ impl EqualizerBox {
                 Color32::GRAY,
             );
         }
+        for hz in [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000] {
+            let min_hz = 20.0;
+            let max_hz = 20000.0;
+
+            // 対数スケールでの位置計算 (0.0 ~ 1.0)
+            let t = (f32::log10(hz as f32) - f32::log10(min_hz))
+                / (f32::log10(max_hz) - f32::log10(min_hz));
+
+            // 実際のスクリーン座標に変換
+            let x = rect.left() + t * rect.width();
+
+            // 垂直線の描画
+            painter.line_segment(
+                [Pos2::new(x, rect.top()), Pos2::new(x, rect.bottom())],
+                stroke,
+            );
+
+            // ラベルの描画 (1000Hz以上はk表記にするとスッキリします)
+            let label = if hz >= 1000 {
+                format!("{}k", hz / 1000)
+            } else {
+                format!("{hz}")
+            };
+
+            painter.text(
+                Pos2::new(x, rect.bottom() + 5.0),
+                Align2::CENTER_TOP,
+                label,
+                font.clone(),
+                Color32::GRAY,
+            );
+        }
     }
 
     fn draw_band(
         ui: &mut egui::Ui,
         rect: Rect,
         freq: &FloatParam,
-        gain: Option<&FloatParam>,
+        gain: &FloatParam,
         q: &FloatParam,
         color: Color32,
         label: &str,
     ) {
-        let f_val = freq.value() as f32;
+        let f_val = freq.value();
 
         // HP/LP の場合は「仮の垂直位置」を保存して動かせるようにする
         let y_id = ui.make_persistent_id(label).with("y_pos");
         let mut y_norm_custom = ui.data_mut(|d| *d.get_temp_mut_or_insert_with(y_id, || 0.5f32));
 
-        let current_y_norm = if let Some(g) = gain {
-            1.0 - (g.value() as f32 + 24.0) / 48.0
-        } else {
-            y_norm_custom
-        };
+        let current_y_norm = 1.0 - (gain.value() + 24.0) / 48.0;
 
         let pos = Pos2::new(
             rect.left() + freq_to_norm(f_val) * rect.width(),
@@ -190,12 +218,7 @@ impl EqualizerBox {
         // ダブルクリックでリセット
         if resp.double_clicked() {
             freq.set_value(freq.info.default_plain);
-            if let Some(g) = gain {
-                g.set_value(g.info.default_plain);
-            } else {
-                y_norm_custom = 0.5;
-                ui.data_mut(|d| d.insert_temp(y_id, y_norm_custom));
-            }
+            gain.set_value(gain.info.default_plain);
             q.set_value(q.info.default_plain);
         }
 
@@ -206,19 +229,17 @@ impl EqualizerBox {
             let new_f = (f_val.ln() + (delta.x / rect.width()) * freq_range).exp();
             freq.set_value(new_f.clamp(20.0, 20000.0) as f64);
 
-            if let Some(gp) = gain {
-                let current_g = gp.value() as f32;
-                let new_g = (current_g - (delta.y / rect.height()) * 48.0).clamp(-24.0, 24.0);
-                gp.set_value(new_g as f64);
-            } else {
-                // HP/LP の垂直移動
-                y_norm_custom = (y_norm_custom + delta.y / rect.height()).clamp(0.1, 0.9);
-                // センター付近でスナップ
-                if (y_norm_custom - 0.5).abs() < 0.02 {
-                    y_norm_custom = 0.5;
-                }
-                ui.data_mut(|d| d.insert_temp(y_id, y_norm_custom));
+            let current_g = gain.value();
+            let new_g = (current_g - (delta.y / rect.height()) * 48.0).clamp(-24.0, 24.0);
+            gain.set_value(new_g as f64);
+
+            // HP/LP の垂直移動
+            y_norm_custom = (y_norm_custom + delta.y / rect.height()).clamp(0.1, 0.9);
+            // センター付近でスナップ
+            if (y_norm_custom - 0.5).abs() < 0.02 {
+                y_norm_custom = 0.5;
             }
+            ui.data_mut(|d| d.insert_temp(y_id, y_norm_custom));
         }
 
         // スクロールでQ値変更
@@ -229,7 +250,7 @@ impl EqualizerBox {
                 delta
             });
             if scroll != 0.0 {
-                let new_q = (q.value() as f32 + scroll / 200.0).clamp(0.1, 10.0);
+                let new_q = (q.value() + scroll / 200.0).clamp(0.1, 10.0);
                 q.set_value(new_q as f64);
             }
         }
@@ -240,8 +261,7 @@ impl EqualizerBox {
         let display_color = if is_active { Color32::WHITE } else { color };
 
         // Qのガイド円
-        let q_radius =
-            ((rect.width() * 0.08) / (q.value() as f32).sqrt()).clamp(8.0, rect.width() / 4.0);
+        let q_radius = ((rect.width() * 0.08) / q.value().sqrt()).clamp(8.0, rect.width() / 4.0);
         painter.with_clip_rect(rect).circle_stroke(
             pos,
             q_radius,
@@ -253,11 +273,7 @@ impl EqualizerBox {
         painter.circle_stroke(pos, 6.0, Stroke::new(2.0, display_color));
 
         if is_active {
-            let info_txt = if let Some(g) = gain {
-                format!("{label}\n{:.0}Hz / {:.1}dB", freq.value(), g.value())
-            } else {
-                format!("{label}\n{:.0}Hz", freq.value())
-            };
+            let info_txt = format!("{label}\n{:.0}Hz / {:.1}dB", freq.value(), gain.value());
 
             // 値のテキスト描画（背景付き）
             let text_pos = pos - Vec2::new(0.0, 28.0);
@@ -298,22 +314,20 @@ impl EqualizerBox {
                             freq.set_value(f.into());
                         }
                     });
-                    if let Some(gp) = gain {
-                        ui.horizontal(|ui| {
-                            ui.label("Gain:");
-                            let mut g = gp.value();
-                            if ui
-                                .add(
-                                    egui::DragValue::new(&mut g)
-                                        .suffix("dB")
-                                        .range(-24.0..=24.0),
-                                )
-                                .changed()
-                            {
-                                gp.set_value(g.into());
-                            }
-                        });
-                    }
+                    ui.horizontal(|ui| {
+                        ui.label("Gain:");
+                        let mut g = gain.value();
+                        if ui
+                            .add(
+                                egui::DragValue::new(&mut g)
+                                    .suffix("dB")
+                                    .range(-24.0..=24.0),
+                            )
+                            .changed()
+                        {
+                            gain.set_value(g.into());
+                        }
+                    });
                     ui.horizontal(|ui| {
                         ui.label("Q:");
                         let mut q_v = q.value();

@@ -25,7 +25,7 @@ fn main() {
                         if sample_entry
                             .path()
                             .extension()
-                            .map_or(false, |ext| ext == "wav")
+                            .is_some_and(|ext| ext == "wav")
                         {
                             let stem = sample_entry
                                 .path()
@@ -101,8 +101,7 @@ fn main() {
                         }
                     }
                 }
-                if last_active_index == 0 && samples.first().map_or(true, |&s| s.abs() <= threshold)
-                {
+                if last_active_index == 0 && samples.first().is_none_or(|&s| s.abs() <= threshold) {
                     samples.clear();
                 } else {
                     samples.truncate(last_active_index + 1);

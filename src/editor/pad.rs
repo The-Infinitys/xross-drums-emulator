@@ -1,5 +1,6 @@
 use crate::events::NoteEvents;
-use egui::{self, epaint::Hsva, Color32, Pos2, Rect, Stroke, Vec2};
+use egui::{self, Color32, Pos2, Rect, Stroke, Vec2, epaint::Hsva};
+use std::f32::consts::{FRAC_PI_3, PI};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -71,9 +72,9 @@ impl DrumsPad {
                         ZoneType::Segments3 => {
                             let hit_angle: f32 = local_vec.angle();
                             // 3分割判定 (-PI to PI の範囲で 120度ずつ)
-                            let zone: u8 = if hit_angle < -1.0472 {
+                            let zone: u8 = if hit_angle < -FRAC_PI_3 {
                                 0
-                            } else if hit_angle < 1.0472 {
+                            } else if hit_angle < FRAC_PI_3 {
                                 1
                             } else {
                                 2
@@ -118,53 +119,54 @@ impl DrumsPad {
         );
 
         // 2. ゾーン発光
-        if self.zone_type != ZoneType::None && flash > 0.0 {
-            if let Some(zone) = self.last_hit_zone {
-                match self.zone_type {
-                    ZoneType::Segments3 => {
-                        let s_ang: f32 = match zone {
-                            0 => -3.1415,
-                            1 => -1.0472,
-                            _ => 1.0472,
-                        };
-                        let e_ang: f32 = match zone {
-                            0 => -1.0472,
-                            1 => 1.0472,
-                            _ => 3.1415,
-                        };
-                        let mut points = vec![pos];
-                        for i in 0..=10 {
-                            let a = s_ang + (e_ang - s_ang) * (i as f32 / 10.0);
-                            points.push(pos + Vec2::new(a.cos(), a.sin()) * self.radius);
-                        }
-                        painter.add(egui::Shape::convex_polygon(
-                            points,
-                            Color32::WHITE.gamma_multiply(flash * 0.4),
-                            Stroke::NONE,
-                        ));
+        if self.zone_type != ZoneType::None
+            && flash > 0.0
+            && let Some(zone) = self.last_hit_zone
+        {
+            match self.zone_type {
+                ZoneType::Segments3 => {
+                    let s_ang: f32 = match zone {
+                        0 => -PI,
+                        1 => -FRAC_PI_3,
+                        _ => FRAC_PI_3,
+                    };
+                    let e_ang: f32 = match zone {
+                        0 => -FRAC_PI_3,
+                        1 => FRAC_PI_3,
+                        _ => PI,
+                    };
+                    let mut points = vec![pos];
+                    for i in 0..=10 {
+                        let a = s_ang + (e_ang - s_ang) * (i as f32 / 10.0);
+                        points.push(pos + Vec2::new(a.cos(), a.sin()) * self.radius);
                     }
-                    ZoneType::Concentric => {
-                        if zone == 1 {
-                            // ベル部分の発光
-                            painter.circle_filled(
-                                pos,
-                                self.radius * 0.4,
-                                Color32::WHITE.gamma_multiply(flash * 0.6),
-                            );
-                        } else {
-                            // 本体部分の発光（ドーナツ状だが簡易的に円のストロークで表現）
-                            painter.circle_stroke(
-                                pos,
-                                self.radius * 0.7,
-                                Stroke::new(
-                                    self.radius * 0.6,
-                                    Color32::WHITE.gamma_multiply(flash * 0.3),
-                                ),
-                            );
-                        }
-                    }
-                    _ => {}
+                    painter.add(egui::Shape::convex_polygon(
+                        points,
+                        Color32::WHITE.gamma_multiply(flash * 0.4),
+                        Stroke::NONE,
+                    ));
                 }
+                ZoneType::Concentric => {
+                    if zone == 1 {
+                        // ベル部分の発光
+                        painter.circle_filled(
+                            pos,
+                            self.radius * 0.4,
+                            Color32::WHITE.gamma_multiply(flash * 0.6),
+                        );
+                    } else {
+                        // 本体部分の発光（ドーナツ状だが簡易的に円のストロークで表現）
+                        painter.circle_stroke(
+                            pos,
+                            self.radius * 0.7,
+                            Stroke::new(
+                                self.radius * 0.6,
+                                Color32::WHITE.gamma_multiply(flash * 0.3),
+                            ),
+                        );
+                    }
+                }
+                _ => {}
             }
         }
 
@@ -196,7 +198,7 @@ impl DrumsPad {
 
         // 5. 分割線の描画
         if self.zone_type == ZoneType::Segments3 {
-            let split_angles: [f32; 3] = [-1.0472, 1.0472, 3.1415];
+            let split_angles: [f32; 3] = [-FRAC_PI_3, FRAC_PI_3, PI];
             for &a in &split_angles {
                 painter.line_segment(
                     [pos, pos + Vec2::new(a.cos(), a.sin()) * self.radius],

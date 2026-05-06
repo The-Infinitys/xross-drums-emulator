@@ -19,14 +19,14 @@ pub fn process(
         _ => 0.9, // Floor Tom
     };
 
-    let f_target = params.freq.value() as f32 * base_scale;
-    let decay = params.decay.value() as f32;
+    let f_target = params.freq.value() * base_scale;
+    let decay = params.decay.value();
 
     // 振幅とピッチのエンベロープ
     let amp_env = SynthUtils::exp_env(t, decay);
     let p_env = SynthUtils::exp_env(t, decay * 0.2); // ピッチが落ちる速度
 
-    let sweep = params.sweep.value() as f32 * 1.5;
+    let sweep = params.sweep.value() * 1.5;
     let current_freq = f_target * (1.0 + sweep * p_env);
 
     *phase += 2.0 * PI * current_freq / sr;

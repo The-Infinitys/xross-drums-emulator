@@ -2,8 +2,7 @@ use super::{DrumPreset, EqBandPreset, EqPreset, PartPreset, SynthPreset};
 
 pub const PRESET: DrumPreset = DrumPreset {
     name: "METAL",
-    description:
-        "Ultra-precise modern metal. Extreme scoop, clinical attack, and massive low-end focus.",
+    description: "Ultra-precise modern metal. Extreme scoop, clinical attack, and massive low-end focus.",
     kick: PartPreset {
         pan: 0.0,
         heavy: 100.0,
