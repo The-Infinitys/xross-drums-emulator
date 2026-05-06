@@ -28,13 +28,6 @@ impl XrossDrumsEmulator {
         _events: &EventList,
         _context: &mut ProcessContext,
     ) -> ProcessStatus {
-        for i in 0..buffer.num_samples() {
-            let gain = db_to_linear(self.params.gain.smoothed_next() as f64) as f32;
-            for ch in 0..buffer.channels() {
-                let (inp, out) = buffer.io(ch);
-                out[i] = inp[i] * gain;
-            }
-        }
         ProcessStatus::Normal
     }
     pub fn params(&self) -> Arc<XrossDrumsEmulatorParams> {
