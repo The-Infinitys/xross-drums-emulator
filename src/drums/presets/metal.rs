@@ -1,0 +1,273 @@
+use super::{DrumPreset, EqBandPreset, EqPreset, PartPreset, SynthPreset};
+
+pub const PRESET: DrumPreset = DrumPreset {
+    name: "METAL",
+    description:
+        "Ultra-precise modern metal. Extreme scoop, clinical attack, and massive low-end focus.",
+    kick: PartPreset {
+        heavy: 100.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 45.0,
+            sweep: 0.85,
+            decay: 250.0,
+            noise: 0.5,
+            noise_decay: 20.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 55.0,
+                gain: 8.0,
+                q: 0.8,
+            },
+            mid: EqBandPreset {
+                freq: 350.0,
+                gain: -18.0,
+                q: 0.4,
+            },
+            high: EqBandPreset {
+                freq: 4500.0,
+                gain: 12.0,
+                q: 0.8,
+            },
+        },
+        comp_threshold: -22.0,
+        trans_attack: 15.0,
+        trans_sustain: -10.0,
+    },
+    snare: PartPreset {
+        heavy: 100.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 210.0,
+            sweep: 0.2,
+            decay: 180.0,
+            noise: 0.8,
+            noise_decay: 300.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 200.0,
+                gain: 5.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 650.0,
+                gain: -10.0,
+                q: 0.5,
+            },
+            high: EqBandPreset {
+                freq: 5500.0,
+                gain: 9.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -18.0,
+        trans_attack: 10.0,
+        trans_sustain: 6.0,
+    },
+    hihat: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 600.0,
+            sweep: 0.0,
+            decay: 50.0,
+            noise: 0.9,
+            noise_decay: 60.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 500.0,
+                gain: -24.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 8000.0,
+                gain: 4.0,
+                q: 0.7,
+            },
+            high: EqBandPreset {
+                freq: 15000.0,
+                gain: 8.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -12.0,
+        trans_attack: 6.0,
+        trans_sustain: -2.0,
+    },
+    tom_h: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 160.0,
+            sweep: 0.6,
+            decay: 300.0,
+            noise: 0.2,
+            noise_decay: 30.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 180.0,
+                gain: 4.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 500.0,
+                gain: -12.0,
+                q: 0.6,
+            },
+            high: EqBandPreset {
+                freq: 4500.0,
+                gain: 6.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -15.0,
+        trans_attack: 10.0,
+        trans_sustain: 1.0,
+    },
+    tom_l: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 120.0,
+            sweep: 0.6,
+            decay: 350.0,
+            noise: 0.2,
+            noise_decay: 30.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 130.0,
+                gain: 4.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 450.0,
+                gain: -12.0,
+                q: 0.6,
+            },
+            high: EqBandPreset {
+                freq: 4000.0,
+                gain: 6.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -15.0,
+        trans_attack: 10.0,
+        trans_sustain: 1.0,
+    },
+    tom_f: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 80.0,
+            sweep: 0.7,
+            decay: 400.0,
+            noise: 0.2,
+            noise_decay: 30.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 90.0,
+                gain: 6.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 400.0,
+                gain: -14.0,
+                q: 0.6,
+            },
+            high: EqBandPreset {
+                freq: 3500.0,
+                gain: 6.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -15.0,
+        trans_attack: 10.0,
+        trans_sustain: 1.0,
+    },
+    crash: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 300.0,
+            sweep: 0.0,
+            decay: 1200.0,
+            noise: 0.9,
+            noise_decay: 1000.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 400.0,
+                gain: -24.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 6000.0,
+                gain: 3.0,
+                q: 0.7,
+            },
+            high: EqBandPreset {
+                freq: 12000.0,
+                gain: 6.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -14.0,
+        trans_attack: 5.0,
+        trans_sustain: -2.0,
+    },
+    ride: PartPreset {
+        heavy: 80.0,
+        light: 0.0,
+        medium: 0.0,
+        electric: 0.0,
+        synth: SynthPreset {
+            freq: 450.0,
+            sweep: 0.0,
+            decay: 2000.0,
+            noise: 0.6,
+            noise_decay: 1800.0,
+        },
+        eq: EqPreset {
+            low: EqBandPreset {
+                freq: 500.0,
+                gain: -20.0,
+                q: 0.7,
+            },
+            mid: EqBandPreset {
+                freq: 4500.0,
+                gain: 4.0,
+                q: 0.7,
+            },
+            high: EqBandPreset {
+                freq: 11000.0,
+                gain: 7.0,
+                q: 0.7,
+            },
+        },
+        comp_threshold: -10.0,
+        trans_attack: 6.0,
+        trans_sustain: -2.0,
+    },
+    master_comp_threshold: -26.0,
+    master_clipper_threshold: -1.0,
+};

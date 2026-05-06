@@ -2,12 +2,12 @@ use crate::utils::FloatParamNormalizedExt;
 use egui::{vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget};
 use std::f32::consts::PI;
 
-pub struct Knob<'a> {
+pub struct SingleKnob<'a> {
     param: &'a truce::params::FloatParam,
     base_color: Color32,
 }
 
-impl<'a> Knob<'a> {
+impl<'a> SingleKnob<'a> {
     pub fn new(param: &'a truce::params::FloatParam, color: Color32) -> Self {
         Self {
             param,
@@ -34,7 +34,7 @@ impl<'a> Knob<'a> {
     }
 }
 
-impl<'a> Widget for Knob<'a> {
+impl<'a> Widget for SingleKnob<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
         // --- 1. レイアウト定義 ---
         let desired_size = vec2(62.0, 120.0);

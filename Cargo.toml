@@ -37,6 +37,7 @@ truce-standalone = { git = "https://github.com/truce-audio/truce", tag = "v0.18.
 clap-sys = { version = "0.5", optional = true }
 egui = "0.31.1"
 rand = "0.10.1"
+rand_pcg = "0.10.1"
 [dev-dependencies]
 truce-test = { git = "https://github.com/truce-audio/truce", tag = "v0.18.4" }
 
