@@ -124,7 +124,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/truce-audio/baseview.git#c46647d5d3ffa2048de6788935f618abfaef77cf"
+source = "git+https://github.com/truce-audio/baseview.git#318d11218d6d1c71b168ce6c615077b99bfeded0"
 dependencies = [
  "cocoa",
  "core-foundation 0.9.4",
@@ -1500,9 +1500,9 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eb8486b569e12e2c32ad3e204dbaba5e4b5b216e9367044f25f1dba42341773"
+checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
 
 [[package]]
 name = "quote"

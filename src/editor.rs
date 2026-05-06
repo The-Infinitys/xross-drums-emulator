@@ -1,6 +1,7 @@
 use crate::params::XrossDrumsEmulatorParams;
 use std::sync::Arc;
 mod background;
+mod knobs;
 use background::Background;
 use egui::Frame;
 use truce_egui::EguiEditor;

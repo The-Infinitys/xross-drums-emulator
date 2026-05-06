@@ -3,6 +3,7 @@ mod drums;
 mod editor;
 mod params;
 mod plugin;
+mod utils;
 pub use drums::*;
 pub use params::*;
 
