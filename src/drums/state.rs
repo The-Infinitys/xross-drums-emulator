@@ -6,7 +6,9 @@ pub struct PartState {
     /// トリガー時のベロシティ (0.0 - 1.0)
     pub velocity: f32,
     /// シンセ用のフェーズ
-    pub phase: f32,
+    pub phase_modern: f32,
+    pub phase_808: f32,
+    pub phase_909: f32,
 }
 
 impl Default for PartState {
@@ -20,14 +22,18 @@ impl PartState {
         Self {
             current_sample: usize::MAX,
             velocity: 0.0,
-            phase: 0.0,
+            phase_modern: 0.0,
+            phase_808: 0.0,
+            phase_909: 0.0,
         }
     }
 
     pub fn trigger(&mut self, velocity: f32) {
         self.current_sample = 0;
         self.velocity = velocity / 127.0;
-        self.phase = 0.0;
+        self.phase_modern = 0.0;
+        self.phase_808 = 0.0;
+        self.phase_909 = 0.0;
     }
 
     pub fn stop(&mut self) {

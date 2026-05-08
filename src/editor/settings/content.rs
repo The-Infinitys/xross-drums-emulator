@@ -17,15 +17,21 @@ pub fn draw_part_section(ui: &mut egui::Ui, title: &str, part: &PartParams) {
         ui.heading(RichText::new(title).color(Color32::WHITE));
         ui.add_space(8.0);
 
-        // 1. EQ Section (Full Control)
+        // 1. EQ Section
         draw_equalizer_full_unit(ui, title, &part.eq);
         ui.add_space(16.0);
 
-        // 2. Effects Row
-        ui.horizontal_top(|ui| {
+        // 2. Row 1
+        ui.horizontal_wrapped(|ui| {
             draw_mixer_unit(ui, part);
             draw_synth_unit(ui, title, &part.electric);
+            draw_delay_unit(ui, title, &part.fx);
+            draw_reverb_unit(ui, title, &part.fx);
             draw_transient_unit(ui, title, &part.transient);
+        });
+        ui.add_space(8.0);
+        // 3. Row 2
+        ui.horizontal_wrapped(|ui| {
             draw_saturation_unit(ui, title, &part.saturation);
             draw_compressor_unit(ui, title, &part.comp);
         });
@@ -38,25 +44,26 @@ pub fn draw_master_section(ui: &mut egui::Ui, params: &XrossDrumsEmulatorParams)
         ui.heading(RichText::new("MASTER OUTPUT").color(Color32::WHITE));
         ui.add_space(8.0);
 
-        ui.horizontal_top(|ui| {
-            // Master EQ
+        // Row 1
+        ui.horizontal_wrapped(|ui| {
             draw_equalizer_full_unit(ui, "master_eq", &params.master.eq);
-            ui.add_space(20.0);
-
-            // Master Dynamics (Comp + Clipper)
+            draw_delay_unit(ui, "master", &params.master.fx);
+            draw_reverb_unit(ui, "master", &params.master.fx);
+        });
+        ui.add_space(8.0);
+        // Row 2
+        ui.horizontal_wrapped(|ui| {
             effect_unit(
                 ui,
                 "Master Dynamics",
                 Color32::from_rgb(255, 150, 50),
                 |ui| {
                     ui.horizontal_top(|ui| {
-                        // Compressor Part
                         ui.vertical(|ui| {
                             ui.label("Compressor");
                             draw_compressor_grid(ui, "master_comp", &params.master.comp);
                         });
                         ui.add_space(10.0);
-                        // Clipper Part
                         ui.vertical(|ui| {
                             ui.label("Clipper");
                             draw_clipper_grid(ui, "master_clip", &params.master.clipper);
@@ -119,12 +126,61 @@ fn draw_mixer_unit(ui: &mut egui::Ui, part: &PartParams) {
                 &params.medium_level,
                 Color32::from_rgb(100, 100, 255),
             ));
+            ui.add_space(8.0);
+            ui.label("Synth Models");
             ui.add(LinearSlider::new(
-                &params.electric_level,
-                Color32::from_rgb(0, 255, 200),
+                &params.synth_modern,
+                Color32::from_rgb(0, 200, 255),
+            ));
+            ui.add(LinearSlider::new(
+                &params.synth_808,
+                Color32::from_rgb(255, 100, 100),
+            ));
+            ui.add(LinearSlider::new(
+                &params.synth_909,
+                Color32::from_rgb(100, 255, 100),
             ));
             ui.add_space(8.0);
             labeled_knob(ui, "Pan", &part.pan.pan, Color32::from_rgb(255, 150, 50));
+        });
+    });
+}
+
+fn draw_delay_unit(ui: &mut egui::Ui, id_prefix: &str, params: &crate::params::fx::FxParams) {
+    effect_unit(ui, "Delay", Color32::from_rgb(255, 200, 100), |ui| {
+        egui::Grid::new(format!("{}_dly", id_prefix)).show(ui, |ui| {
+            labeled_knob(
+                ui,
+                "Mix",
+                &params.delay_mix,
+                Color32::from_rgb(255, 200, 100),
+            );
+            labeled_knob(
+                ui,
+                "Time",
+                &params.delay_time,
+                Color32::from_rgb(255, 200, 100),
+            );
+            labeled_knob(ui, "FB", &params.delay_fb, Color32::from_rgb(255, 200, 100));
+        });
+    });
+}
+
+fn draw_reverb_unit(ui: &mut egui::Ui, id_prefix: &str, params: &crate::params::fx::FxParams) {
+    effect_unit(ui, "Reverb", Color32::from_rgb(200, 200, 255), |ui| {
+        egui::Grid::new(format!("{}_rev", id_prefix)).show(ui, |ui| {
+            labeled_knob(
+                ui,
+                "Mix",
+                &params.reverb_mix,
+                Color32::from_rgb(200, 200, 255),
+            );
+            labeled_knob(
+                ui,
+                "Decay",
+                &params.reverb_decay,
+                Color32::from_rgb(200, 200, 255),
+            );
         });
     });
 }
@@ -275,6 +331,17 @@ fn draw_compressor_grid(ui: &mut egui::Ui, id_prefix: &str, params: &CompressorP
     });
 }
 
+fn draw_equalizer_full_unit(ui: &mut egui::Ui, title: &str, eq: &EqualizerParams) {
+    effect_unit(
+        ui,
+        format!("Equalizer ({})", title).as_str(),
+        Color32::from_rgb(200, 200, 200),
+        |ui| {
+            EqualizerBox::draw(ui, eq);
+        },
+    );
+}
+
 fn draw_clipper_grid(ui: &mut egui::Ui, id_prefix: &str, params: &ClipperParams) {
     ui.vertical(|ui| {
         ui.label("Oversampling");
@@ -312,15 +379,4 @@ fn draw_clipper_grid(ui: &mut egui::Ui, id_prefix: &str, params: &ClipperParams)
             );
         });
     });
-}
-
-fn draw_equalizer_full_unit(ui: &mut egui::Ui, title: &str, eq: &EqualizerParams) {
-    effect_unit(
-        ui,
-        format!("Equalizer ({})", title).as_str(),
-        Color32::from_rgb(200, 200, 200),
-        |ui| {
-            EqualizerBox::draw(ui, eq);
-        },
-    );
 }

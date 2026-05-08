@@ -55,6 +55,7 @@ pub struct XrossDrumsEmulator {
     crash_cymbal_fx: EffectChain,
     ride_cymbal_fx: EffectChain,
     ride_bell_fx: EffectChain,
+    master_fx: EffectChain,
 
     sample_rate: f32,
 }
@@ -77,6 +78,7 @@ impl XrossDrumsEmulator {
             crash_cymbal_fx: EffectChain::new(),
             ride_cymbal_fx: EffectChain::new(),
             ride_bell_fx: EffectChain::new(),
+            master_fx: EffectChain::new(),
             sample_rate: 44100.0,
         }
     }
@@ -203,8 +205,10 @@ impl XrossDrumsEmulator {
                 &mut self.ride_bell_fx,
             );
 
-            buffer.output(0)[i] = left;
-            buffer.output(1)[i] = right;
+            // マスターFXを適用（簡易的なparams変換）
+            let master_params = PartParams::default();
+            buffer.output(0)[i] = self.master_fx.process(left, &master_params, sample_rate);
+            buffer.output(1)[i] = self.master_fx.process(right, &master_params, sample_rate);
 
             self.state.process_advance(1);
         }
@@ -250,16 +254,19 @@ impl XrossDrumsEmulator {
             }
         }
 
-        let elec_level = ctx.params.electric.electric_level.value() / 100.0;
-        if elec_level > 0.0 {
+        if ctx.state.current_sample != usize::MAX {
             combined += DrumSynth::process(
-                sample_name,
+                ctx.part_id,
                 &ctx.params.electric,
                 ctx.state.current_sample,
                 ctx.state.velocity,
                 ctx.sample_rate,
-                &mut ctx.state.phase,
-            ) * elec_level;
+                synth::SynthPhases {
+                    modern: &mut ctx.state.phase_modern,
+                    v808: &mut ctx.state.phase_808,
+                    v909: &mut ctx.state.phase_909,
+                },
+            );
         }
 
         combined = ctx.fx.process(combined, ctx.params, ctx.sample_rate);

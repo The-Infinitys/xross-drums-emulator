@@ -84,7 +84,6 @@ impl DrumPreset {
         part.electric.heavy_level.set_value(p.heavy as f64);
         part.electric.light_level.set_value(p.light as f64);
         part.electric.medium_level.set_value(p.medium as f64);
-        part.electric.electric_level.set_value(p.electric as f64);
 
         // Synth
         part.electric.freq.set_value(p.synth.freq as f64);

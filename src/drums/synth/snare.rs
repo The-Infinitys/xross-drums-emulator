@@ -1,9 +1,10 @@
 use super::utils::SynthUtils;
+use crate::drums::PartId;
 use crate::params::electric::ElectricParams;
 use std::f32::consts::PI;
 
 pub fn process(
-    name: &str,
+    part_id: PartId,
     params: &ElectricParams,
     pos: usize,
     vel: f32,
@@ -13,8 +14,8 @@ pub fn process(
     let t = pos as f32 / sr;
     let freq = params.freq.value();
 
-    match name {
-        "sidestick" => {
+    match part_id {
+        PartId::Sidestick => {
             // サイドスティック: 鋭く「カキーン」と響く設定
             let env = SynthUtils::exp_env(t, 20.0); // わずかに長くして余韻を出す
 
@@ -58,7 +59,7 @@ pub fn process(
             snappy *= snappy_env * params.noise_level.value();
 
             // 3. リムショットならアタックに鋭いパルスを追加
-            let rim_attack = if name == "rimshot" {
+            let rim_attack = if part_id == PartId::Rimshot {
                 let r_env = SynthUtils::exp_env(t, 5.0);
                 (t * 2.0 * PI * freq * 12.0).sin() * r_env * 0.8
             } else {
@@ -68,4 +69,48 @@ pub fn process(
             (body * 0.6 + snappy + rim_attack) * vel
         }
     }
+}
+
+pub fn process_808(
+    _part_id: PartId,
+    params: &ElectricParams,
+    pos: usize,
+    vel: f32,
+    sr: f32,
+    phase: &mut f32,
+) -> f32 {
+    let t = pos as f32 / sr;
+    let freq = params.freq.value() * 0.5;
+
+    // 808スネア: ノイズとサイン波のシンプルなブレンド
+    let amp_env = SynthUtils::exp_env(t, params.decay.value() * 0.5);
+    let noise_env = SynthUtils::exp_env(t, params.noise_decay.value());
+    let noise = SynthUtils::stable_noise(pos) * noise_env * params.noise_level.value();
+
+    *phase += 2.0 * PI * freq / sr;
+    let body = phase.sin() * amp_env * 0.5;
+
+    (body + noise) * vel
+}
+
+pub fn process_909(
+    _part_id: PartId,
+    params: &ElectricParams,
+    pos: usize,
+    vel: f32,
+    sr: f32,
+    _phase: &mut f32,
+) -> f32 {
+    let t = pos as f32 / sr;
+    let freq = params.freq.value() * 2.0;
+
+    // 909スネア: 複雑な金属的ノイズとデチューンされたオシレーター
+    let amp_env = SynthUtils::exp_env(t, params.decay.value() * 0.3);
+    let noise_env = SynthUtils::exp_env(t, params.noise_decay.value() * 0.8);
+    let noise = SynthUtils::stable_noise(pos) * noise_env * params.noise_level.value();
+
+    let osc1 = (t * 2.0 * PI * freq).sin();
+    let osc2 = (t * 2.0 * PI * freq * 1.05).sin(); // detune
+
+    ((osc1 + osc2) * 0.4 + noise) * amp_env * vel
 }

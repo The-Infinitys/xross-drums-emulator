@@ -1,16 +1,23 @@
 use super::utils::SynthUtils;
+use crate::drums::PartId;
 use crate::params::electric::ElectricParams;
 use std::f32::consts::PI;
 
-pub fn process_cymbal(name: &str, params: &ElectricParams, pos: usize, vel: f32, sr: f32) -> f32 {
+pub fn process_cymbal(
+    part_id: PartId,
+    params: &ElectricParams,
+    pos: usize,
+    vel: f32,
+    sr: f32,
+) -> f32 {
     let t = pos as f32 / sr;
 
-    let (decay_mult, brightness) = match name {
-        "hihat_closed" => (0.05, 1.2),
-        "hihat_open" => (1.2, 1.0),
-        "crash_cymbal" => (3.5, 0.8),
-        "ride_cymbal" => (5.5, 0.6),
-        "ride_bell" => (4.0, 0.4),
+    let (decay_mult, brightness) = match part_id {
+        PartId::HiHatClosed => (0.05, 1.2),
+        PartId::HiHatOpen => (1.2, 1.0),
+        PartId::Crash => (3.5, 0.8),
+        PartId::Ride => (5.5, 0.6),
+        PartId::RideBell => (4.0, 0.4),
         _ => (1.0, 1.0),
     };
 
@@ -44,11 +51,42 @@ pub fn process_cymbal(name: &str, params: &ElectricParams, pos: usize, vel: f32,
     }
 
     // 4. ライドシンバルなら「コツッ」という粒立ちを追加
-    if name.starts_with("ride") {
+    if part_id == PartId::Ride || part_id == PartId::RideBell {
         let stick_env = SynthUtils::exp_env(t, 10.0);
         let stick_click = (t * 2.0 * PI * f_base * 4.0).sin() * stick_env;
         signal += stick_click * 0.3;
     }
 
     signal * env * params.noise_level.value() * 0.4 * vel
+}
+
+pub fn process_808(
+    _part_id: PartId,
+    params: &ElectricParams,
+    pos: usize,
+    vel: f32,
+    sr: f32,
+) -> f32 {
+    let t = pos as f32 / sr;
+    let env = SynthUtils::exp_env(t, params.noise_decay.value() * 0.5);
+    let noise = SynthUtils::stable_noise(pos);
+
+    (noise * env * params.noise_level.value()) * vel
+}
+
+pub fn process_909(
+    _part_id: PartId,
+    params: &ElectricParams,
+    pos: usize,
+    vel: f32,
+    sr: f32,
+) -> f32 {
+    let t = pos as f32 / sr;
+    let env = SynthUtils::exp_env(t, params.noise_decay.value());
+    let noise = SynthUtils::stable_noise(pos);
+
+    // 909はノイズの帯域が広い
+    let osc = (t * 2.0 * PI * params.freq.value()).sin();
+
+    ((noise + osc * 0.2) * env * params.noise_level.value()) * vel
 }

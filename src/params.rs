@@ -4,6 +4,7 @@ pub mod clipper;
 pub mod comp;
 pub mod electric;
 pub mod equalizer;
+pub mod fx;
 pub mod saturation;
 pub mod transient;
 
@@ -11,6 +12,7 @@ use clipper::ClipperParams;
 use comp::CompressorParams;
 use electric::ElectricParams;
 use equalizer::EqualizerParams;
+use fx::FxParams;
 use saturation::SaturationParams;
 use transient::TransientParams;
 
@@ -106,6 +108,8 @@ pub struct PartParams {
     pub transient: TransientParams,
     #[nested]
     pub saturation: SaturationParams,
+    #[nested]
+    pub fx: FxParams,
 }
 
 #[derive(Params, Default)]
@@ -116,6 +120,8 @@ pub struct MasterParams {
     pub comp: CompressorParams,
     #[nested]
     pub clipper: ClipperParams,
+    #[nested]
+    pub fx: FxParams,
 }
 
 #[derive(Params)]

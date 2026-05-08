@@ -45,6 +45,34 @@ pub struct ElectricParams {
     )]
     pub noise_decay: FloatParam,
 
+    // --- Synth Variations ---
+    #[param(
+        name = "Synth Modern",
+        range = "linear(0, 100)",
+        default = 100.0,
+        unit = "%",
+        smooth = "linear(20)"
+    )]
+    pub synth_modern: FloatParam,
+
+    #[param(
+        name = "Synth 808",
+        range = "linear(0, 100)",
+        default = 0.0,
+        unit = "%",
+        smooth = "linear(20)"
+    )]
+    pub synth_808: FloatParam,
+
+    #[param(
+        name = "Synth 909",
+        range = "linear(0, 100)",
+        default = 0.0,
+        unit = "%",
+        smooth = "linear(20)"
+    )]
+    pub synth_909: FloatParam,
+
     // --- Mixer Levels ---
     #[param(
         name = "Heavy Kit",
@@ -72,13 +100,4 @@ pub struct ElectricParams {
         smooth = "linear(20)"
     )]
     pub medium_level: FloatParam,
-
-    #[param(
-        name = "Electric",
-        range = "linear(0, 100)",
-        default = 100.0,
-        unit = "%",
-        smooth = "linear(20)"
-    )]
-    pub electric_level: FloatParam,
 }
