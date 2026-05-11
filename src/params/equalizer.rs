@@ -1,3 +1,4 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 /// 1. ピーキング/シェルビング用バンド（Gainあり）
@@ -60,9 +61,8 @@ impl EqualizerParams {
         hp.freq.set_value(20.0);
         hp.q.info.default_plain = 0.707;
         hp.q.set_value(0.707);
-        hp.gain.info.default_plain = 0.0; // HPFのゲインリセットは0(中央)が扱いやすい
-        hp.gain.set_value(-12.0); // 初期位置だけ下げる
-
+        hp.gain.info.default_plain = -12.0;
+        hp.gain.set_value(-12.0);
         let mut low = EqBandParams::new();
         low.freq.info.default_plain = 100.0;
         low.freq.set_value(100.0);
@@ -92,9 +92,8 @@ impl EqualizerParams {
         lp.freq.set_value(20000.0);
         lp.q.info.default_plain = 0.707;
         lp.q.set_value(0.707);
-        lp.gain.info.default_plain = 0.0;
-        lp.gain.set_value(-12.0); // 初期位置だけ下げる
-
+        lp.gain.info.default_plain = -12.0;
+        lp.gain.set_value(-12.0);
         Self {
             hp,
             low,
@@ -108,4 +107,25 @@ impl Default for EqualizerParams {
     fn default() -> Self {
         Self::new()
     }
+}
+impl OffsetParams for EqualizerParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.hp.with_id_offset(offset);
+        self.low.with_id_offset(offset + EqBandParams::PARAM_COUNT);
+        self.mid
+            .with_id_offset(offset + 2 * EqBandParams::PARAM_COUNT);
+        self.high
+            .with_id_offset(offset + 3 * EqBandParams::PARAM_COUNT);
+        self.lp
+            .with_id_offset(offset + 4 * EqBandParams::PARAM_COUNT);
+    }
+    const PARAM_COUNT: u32 = 5 * EqBandParams::PARAM_COUNT;
+}
+impl OffsetParams for EqBandParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.freq.info.id = offset;
+        self.gain.info.id = offset + 1;
+        self.q.info.id = offset + 2;
+    }
+    const PARAM_COUNT: u32 = 3;
 }

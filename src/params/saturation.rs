@@ -1,3 +1,4 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 #[derive(Params)]
@@ -61,4 +62,15 @@ pub enum SaturationType {
     Tape,
     #[name = "Tube Warmth"]
     Tube,
+}
+impl OffsetParams for SaturationParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.drive.info.id = offset;
+        self.sat_type.info.id = offset + 1;
+        self.input_high_pass.info.id = offset + 2;
+        self.input_low_pass.info.id = offset + 3;
+        self.mix.info.id = offset + 4;
+        self.output_gain.info.id = offset + 5;
+    }
+    const PARAM_COUNT: u32 = 6;
 }

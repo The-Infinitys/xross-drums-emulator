@@ -5,7 +5,7 @@ use crate::electric::ElectricParams;
 use crate::equalizer::EqualizerParams;
 use crate::saturation::{SaturationParams, SaturationType};
 use crate::transient::TransientParams;
-use crate::{PartParams, XrossDrumsEmulatorParams};
+use crate::{XrossDrumsEmulatorParams, part::PartParams};
 
 use super::knob::LinearSlider;
 use super::widgets::{effect_unit, labeled_knob};

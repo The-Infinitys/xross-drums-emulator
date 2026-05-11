@@ -1,3 +1,4 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 #[derive(Params)]
@@ -48,4 +49,14 @@ pub struct FxParams {
         smooth = "linear(20)"
     )]
     pub reverb_decay: FloatParam,
+}
+impl OffsetParams for FxParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.delay_mix.info.id = offset;
+        self.delay_time.info.id = offset + 1;
+        self.delay_fb.info.id = offset + 2;
+        self.reverb_mix.info.id = offset + 3;
+        self.reverb_decay.info.id = offset + 4;
+    }
+    const PARAM_COUNT: u32 = 5;
 }

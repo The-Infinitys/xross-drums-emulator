@@ -1,3 +1,4 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 #[derive(Params)]
@@ -46,4 +47,14 @@ pub struct TransientParams {
         smooth = "linear(20)"
     )]
     pub sensitivity: FloatParam,
+}
+impl OffsetParams for TransientParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.attack_gain.info.id = offset;
+        self.attack_time.info.id = offset + 1;
+        self.sustain_gain.info.id = offset + 2;
+        self.sustain_time.info.id = offset + 3;
+        self.sensitivity.info.id = offset + 4;
+    }
+    const PARAM_COUNT: u32 = 5;
 }

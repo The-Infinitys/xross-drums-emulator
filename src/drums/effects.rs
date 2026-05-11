@@ -1,4 +1,4 @@
-use crate::params::PartParams;
+use crate::params::part::PartParams;
 
 pub trait Effect: Send {
     fn process(&mut self, input: f32, params: &PartParams, sample_rate: f32) -> f32;

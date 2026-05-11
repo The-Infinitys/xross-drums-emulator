@@ -29,13 +29,24 @@ mod tests {
 
     #[test]
     fn renders_nonzero_output() {
-        let result = truce_test::render_effect::<Plugin>(512, 44100.0);
+        let result = truce_test::render_instrument::<Plugin>(
+            512,
+            44100.0,
+            &[Event {
+                sample_offset: 0,
+                body: EventBody::NoteOn {
+                    channel: 0,
+                    note: 36,
+                    velocity: 128.0,
+                },
+            }],
+        );
         truce_test::assert_nonzero(&result.output);
     }
 
     #[test]
-    fn bus_config_effect() {
-        truce_test::assert_bus_config_effect::<Plugin>();
+    fn bus_config_instrument() {
+        truce_test::assert_bus_config_instrument::<Plugin>();
     }
     #[test]
     fn info_is_valid() {

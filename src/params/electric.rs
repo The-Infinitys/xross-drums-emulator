@@ -1,10 +1,11 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 #[derive(Params)]
 pub struct ElectricParams {
     #[param(
         name = "Osc Freq",
-        range = "log(20, 2000)",
+        range = "log(20, 15000)",
         default = 60.0,
         unit = "Hz",
         smooth = "exp(5)"
@@ -100,4 +101,20 @@ pub struct ElectricParams {
         smooth = "linear(20)"
     )]
     pub medium_level: FloatParam,
+}
+impl OffsetParams for ElectricParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.decay.info.id = offset;
+        self.freq.info.id = offset + 1;
+        self.noise_decay.info.id = offset + 2;
+        self.noise_level.info.id = offset + 3;
+        self.sweep.info.id = offset + 4;
+        self.synth_modern.info.id = offset + 5;
+        self.synth_808.info.id = offset + 6;
+        self.synth_909.info.id = offset + 7;
+        self.heavy_level.info.id = offset + 8;
+        self.light_level.info.id = offset + 9;
+        self.medium_level.info.id = offset + 10;
+    }
+    const PARAM_COUNT: u32 = 11;
 }

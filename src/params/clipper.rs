@@ -1,5 +1,7 @@
 use truce::prelude::*;
 
+use super::OffsetParams;
+
 #[derive(Params)]
 pub struct ClipperParams {
     #[param(
@@ -31,6 +33,15 @@ pub struct ClipperParams {
 
     #[param(name = "Oversampling")]
     pub oversampling: EnumParam<OversamplingMode>,
+}
+impl OffsetParams for ClipperParams {
+    const PARAM_COUNT: u32 = 4;
+    fn with_id_offset(&mut self, offset: u32) {
+        self.input_gain.info.id = offset;
+        self.threshold.info.id = offset + 1;
+        self.softness.info.id = offset + 2;
+        self.oversampling.info.id = offset + 3;
+    }
 }
 
 #[derive(ParamEnum, Debug)]

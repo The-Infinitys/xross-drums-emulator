@@ -12,7 +12,7 @@ use crate::XrossDrumsEmulatorParams;
 use crate::drums::context::PartProcessingContext;
 use crate::editor::editor;
 use crate::events::NoteEvents;
-use crate::params::PartParams;
+use crate::params::part::PartParams;
 use effects::EffectChain;
 use samples::DrumsSamples;
 use state::{DrumState, HiHatMode, PartState};
@@ -270,7 +270,6 @@ impl XrossDrumsEmulator {
         }
 
         combined = ctx.fx.process(combined, ctx.params, ctx.sample_rate);
-        combined *= 256.0;
 
         let pan = ctx.params.pan.pan.value() / 100.0;
         let left_gain = (1.0f32 - pan).clamp(0.0, 1.0);
@@ -285,8 +284,11 @@ impl XrossDrumsEmulator {
     }
 
     fn trigger_by_note(&mut self, note: u8, velocity: f32) {
-        // velocityが0-127(u8)か0.0-1.0(f32)かによって正規化が必要な場合があります
-        // ここでは受け取った値をそのまま渡します
+        // UIへのフィードバック
+        self.events
+            .trigger_visual_by_note(note, (velocity * 127.0).clamp(0.0, 127.0) as u8);
+
+        // 音源のトリガー
         match note {
             36 => self.state.kick.trigger(velocity),
             38 => self.state.snare_drum.trigger(velocity),

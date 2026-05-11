@@ -1,5 +1,5 @@
 use crate::drums::{DrumsSamples, EffectChain, PartId, PartState};
-use crate::params::PartParams;
+use crate::params::part::PartParams;
 
 pub struct PartProcessingContext<'a> {
     pub part_id: PartId,

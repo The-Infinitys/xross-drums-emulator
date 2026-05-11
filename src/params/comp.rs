@@ -1,3 +1,4 @@
+use super::OffsetParams;
 use truce::prelude::*;
 
 #[derive(Params)]
@@ -54,4 +55,15 @@ pub struct CompressorParams {
         smooth = "exp(5)"
     )]
     pub makeup: FloatParam,
+}
+impl OffsetParams for CompressorParams {
+    fn with_id_offset(&mut self, offset: u32) {
+        self.threshold.info.id = offset;
+        self.ratio.info.id = offset + 1;
+        self.attack.info.id = offset + 2;
+        self.release.info.id = offset + 3;
+        self.knee.info.id = offset + 4;
+        self.makeup.info.id = offset + 5;
+    }
+    const PARAM_COUNT: u32 = 6;
 }

@@ -55,14 +55,25 @@ impl DrumsPad {
         let rect: Rect = Rect::from_center_size(pos, Vec2::splat(self.radius * 2.0));
         let response: egui::Response =
             ui.interact(rect, ui.id().with(self.note), egui::Sense::click());
-        let key_pressed: bool = ctx.input(|i| i.key_pressed(self.key));
 
-        if response.clicked() || key_pressed {
+        // キー入力を「消費」して取得（スペースキーなどがUI操作に奪われるのを防ぐ）
+        let key_pressed = ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, self.key));
+
+        // MIDI/外部入力によるフィードバックの確認
+        let external_hit = self.poll_external_hit(events);
+
+        if response.clicked() || key_pressed || external_hit.is_some() {
             self.last_hit_time = time;
             let mut target_note: u8 = self.note;
             let mut velocity: u8 = 100;
 
-            if response.clicked() {
+            if let Some(v) = external_hit {
+                velocity = v;
+                // MIDIからの場合は既にトリガーされているので、視覚的な更新のみ
+                if self.zone_type != ZoneType::None && self.last_hit_zone.is_none() {
+                    self.last_hit_zone = Some(1); // デフォルトゾーン
+                }
+            } else if response.clicked() {
                 if let Some(pointer_pos) = response.interact_pointer_pos() {
                     let local_vec: Vec2 = pointer_pos - pos;
                     let dist_sq_ratio: f32 = (local_vec.length() / self.radius).powi(2);
@@ -71,7 +82,6 @@ impl DrumsPad {
                     match self.zone_type {
                         ZoneType::Segments3 => {
                             let hit_angle: f32 = local_vec.angle();
-                            // 3分割判定 (-PI to PI の範囲で 120度ずつ)
                             let zone: u8 = if hit_angle < -FRAC_PI_3 {
                                 0
                             } else if hit_angle < FRAC_PI_3 {
@@ -84,7 +94,6 @@ impl DrumsPad {
                         }
                         ZoneType::Concentric => {
                             let dist: f32 = local_vec.length();
-                            // 半径の40%以内ならベル(Zone 1)、それ以外なら本体(Zone 0)
                             let zone: u8 = if dist < self.radius * 0.4 { 1 } else { 0 };
                             self.last_hit_zone = Some(zone);
                             target_note = self.get_zone_note(zone);
@@ -240,6 +249,11 @@ impl DrumsPad {
                 Stroke::new(1.0, glow_color.gamma_multiply(ripple_alpha)),
             );
         }
+
+        // 減衰が終わったらゾーン情報をリセット
+        if flash <= 0.0 {
+            self.last_hit_zone = None;
+        }
     }
 
     fn get_zone_note(&self, zone: u8) -> u8 {
@@ -249,6 +263,36 @@ impl DrumsPad {
             51 => [51, 53][zone as usize],     // Ride: 0=Cymbal, 1=Bell
             n => n,
         }
+    }
+
+    fn poll_external_hit(&self, events: &NoteEvents) -> Option<u8> {
+        let v = match self.note {
+            36 => events.bass_drum.consume_visual(),
+            38 => {
+                let v1 = events.snare_drum.consume_visual();
+                let v2 = events.rimshot.consume_visual();
+                let v3 = events.sidestick.consume_visual();
+                v1.max(v2).max(v3)
+            }
+            41 => events.tom_floor.consume_visual(),
+            42 => {
+                let v1 = events.hihat_closed.consume_visual();
+                let v2 = events.hihat_open.consume_visual();
+                let v3 = events.hihat_pedal.consume_visual();
+                v1.max(v2).max(v3)
+            }
+            48 => events.tom_high.consume_visual(),
+            45 => events.tom_low.consume_visual(),
+            49 => events.crash_cymbal.consume_visual(),
+            51 => {
+                let v1 = events.ride_cymbal.consume_visual();
+                let v2 = events.ride_bell.consume_visual();
+                v1.max(v2)
+            }
+            _ => 0,
+        };
+
+        if v > 0 { Some(v) } else { None }
     }
 }
 
@@ -263,7 +307,7 @@ impl PadGrid {
         let defs = vec![
             PadDefinition {
                 note: 36,
-                key: egui::Key::Space,
+                key: egui::Key::B,
                 radius: 95.0,
                 angle_deg: 90.0,
                 distance: 100.0,

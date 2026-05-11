@@ -2,14 +2,17 @@ use std::sync::atomic::{AtomicU8, Ordering};
 
 /// 1つのドラムパーツのトリガー状態
 pub struct DrumTrigger {
-    /// 0: トリガーなし, 1-127: Velocity
+    /// 0: トリガーなし, 1-127: Velocity (UI -> Processor)
     pub velocity: AtomicU8,
+    /// 0: トリガーなし, 1-127: Velocity (Processor -> UI)
+    pub visual_hit: AtomicU8,
 }
 
 impl DrumTrigger {
     pub fn new() -> Self {
         Self {
             velocity: AtomicU8::new(0),
+            visual_hit: AtomicU8::new(0),
         }
     }
 
@@ -21,6 +24,16 @@ impl DrumTrigger {
     /// プロセッサで値を取り出し、0に戻す
     pub fn consume(&self) -> u8 {
         self.velocity.swap(0, Ordering::Acquire)
+    }
+
+    /// MIDIから反応させる (Processor -> UI)
+    pub fn trigger_visual(&self, velocity: u8) {
+        self.visual_hit.store(velocity, Ordering::Release);
+    }
+
+    /// UIで反応を取り出し、0に戻す
+    pub fn consume_visual(&self) -> u8 {
+        self.visual_hit.swap(0, Ordering::Acquire)
     }
 }
 
@@ -76,6 +89,26 @@ impl NoteEvents {
             49 => self.crash_cymbal.trigger(velocity),
             51 => self.ride_cymbal.trigger(velocity),
             53 => self.ride_bell.trigger(velocity),
+            _ => {}
+        }
+    }
+
+    /// 外部MIDI入力からUIへ通知するユーティリティ
+    pub fn trigger_visual_by_note(&self, note: u8, velocity: u8) {
+        match note {
+            36 => self.bass_drum.trigger_visual(velocity),
+            38 => self.snare_drum.trigger_visual(velocity),
+            40 => self.rimshot.trigger_visual(velocity),
+            37 => self.sidestick.trigger_visual(velocity),
+            48 => self.tom_high.trigger_visual(velocity),
+            45 => self.tom_low.trigger_visual(velocity),
+            41 => self.tom_floor.trigger_visual(velocity),
+            42 => self.hihat_closed.trigger_visual(velocity),
+            46 => self.hihat_open.trigger_visual(velocity),
+            44 => self.hihat_pedal.trigger_visual(velocity),
+            49 => self.crash_cymbal.trigger_visual(velocity),
+            51 => self.ride_cymbal.trigger_visual(velocity),
+            53 => self.ride_bell.trigger_visual(velocity),
             _ => {}
         }
     }
