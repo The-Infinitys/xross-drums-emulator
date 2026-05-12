@@ -66,12 +66,14 @@ impl DrumsPad {
             self.last_hit_time = time;
             let mut target_note: u8 = self.note;
             let mut velocity: u8 = 100;
+            let mut needs_trigger = true;
 
-            if let Some(v) = external_hit {
+            if let Some((v, zone)) = external_hit {
                 velocity = v;
+                needs_trigger = false;
                 // MIDIからの場合は既にトリガーされているので、視覚的な更新のみ
-                if self.zone_type != ZoneType::None && self.last_hit_zone.is_none() {
-                    self.last_hit_zone = Some(1); // デフォルトゾーン
+                if self.zone_type != ZoneType::None {
+                    self.last_hit_zone = zone;
                 }
             } else if response.clicked() {
                 if let Some(pointer_pos) = response.interact_pointer_pos() {
@@ -110,7 +112,10 @@ impl DrumsPad {
                     None
                 };
             }
-            events.trigger_by_note(target_note, velocity);
+
+            if needs_trigger {
+                events.trigger_by_note(target_note, velocity);
+            }
         }
 
         let delta: f32 = (time - self.last_hit_time) as f32;
@@ -265,34 +270,69 @@ impl DrumsPad {
         }
     }
 
-    fn poll_external_hit(&self, events: &NoteEvents) -> Option<u8> {
-        let v = match self.note {
-            36 => events.bass_drum.consume_visual(),
+    fn poll_external_hit(&self, events: &NoteEvents) -> Option<(u8, Option<u8>)> {
+        match self.note {
+            36 => {
+                let v = events.bass_drum.consume_visual();
+                if v > 0 { Some((v, None)) } else { None }
+            }
             38 => {
-                let v1 = events.snare_drum.consume_visual();
-                let v2 = events.rimshot.consume_visual();
-                let v3 = events.sidestick.consume_visual();
-                v1.max(v2).max(v3)
+                let v_snare = events.snare_drum.consume_visual();
+                let v_rim = events.rimshot.consume_visual();
+                let v_side = events.sidestick.consume_visual();
+                if v_snare > 0 {
+                    Some((v_snare, Some(1)))
+                } else if v_rim > 0 {
+                    Some((v_rim, Some(2)))
+                } else if v_side > 0 {
+                    Some((v_side, Some(0)))
+                } else {
+                    None
+                }
             }
-            41 => events.tom_floor.consume_visual(),
+            41 => {
+                let v = events.tom_floor.consume_visual();
+                if v > 0 { Some((v, None)) } else { None }
+            }
             42 => {
-                let v1 = events.hihat_closed.consume_visual();
-                let v2 = events.hihat_open.consume_visual();
-                let v3 = events.hihat_pedal.consume_visual();
-                v1.max(v2).max(v3)
+                let v_closed = events.hihat_closed.consume_visual();
+                let v_open = events.hihat_open.consume_visual();
+                let v_pedal = events.hihat_pedal.consume_visual();
+                if v_closed > 0 {
+                    Some((v_closed, Some(1)))
+                } else if v_open > 0 {
+                    Some((v_open, Some(2)))
+                } else if v_pedal > 0 {
+                    Some((v_pedal, Some(0)))
+                } else {
+                    None
+                }
             }
-            48 => events.tom_high.consume_visual(),
-            45 => events.tom_low.consume_visual(),
-            49 => events.crash_cymbal.consume_visual(),
+            48 => {
+                let v = events.tom_high.consume_visual();
+                if v > 0 { Some((v, None)) } else { None }
+            }
+            45 => {
+                let v = events.tom_low.consume_visual();
+                if v > 0 { Some((v, None)) } else { None }
+            }
+            49 => {
+                let v = events.crash_cymbal.consume_visual();
+                if v > 0 { Some((v, None)) } else { None }
+            }
             51 => {
-                let v1 = events.ride_cymbal.consume_visual();
-                let v2 = events.ride_bell.consume_visual();
-                v1.max(v2)
+                let v_cymbal = events.ride_cymbal.consume_visual();
+                let v_bell = events.ride_bell.consume_visual();
+                if v_cymbal > 0 {
+                    Some((v_cymbal, Some(0)))
+                } else if v_bell > 0 {
+                    Some((v_bell, Some(1)))
+                } else {
+                    None
+                }
             }
-            _ => 0,
-        };
-
-        if v > 0 { Some(v) } else { None }
+            _ => None,
+        }
     }
 }
 
