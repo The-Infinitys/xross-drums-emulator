@@ -35,7 +35,8 @@ impl PresetsUI {
                     // 1カラムあたりの幅を調整し、グリッドで並べる
                     let columns = 2;
                     let spacing = 15.0;
-                    let item_width = (ui.available_width() - spacing * (columns as f32 + 1.0)) / columns as f32;
+                    let item_width =
+                        (ui.available_width() - spacing * (columns as f32 + 1.0)) / columns as f32;
 
                     egui::Grid::new("preset_grid")
                         .spacing(Vec2::splat(spacing))
@@ -47,18 +48,30 @@ impl PresetsUI {
                                     ui.set_min_height(90.0);
                                     ui.vertical(|ui| {
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new(preset.name).size(20.0).strong().color(*color));
+                                            ui.label(
+                                                RichText::new(preset.name)
+                                                    .size(20.0)
+                                                    .strong()
+                                                    .color(*color),
+                                            );
                                             ui.with_layout(
                                                 egui::Layout::right_to_left(egui::Align::Center),
                                                 |ui| {
-                                                    if ui.button(RichText::new("LOAD").strong()).clicked() {
+                                                    if ui
+                                                        .button(RichText::new("LOAD").strong())
+                                                        .clicked()
+                                                    {
                                                         preset.apply(&self.params);
                                                     }
                                                 },
                                             );
                                         });
                                         ui.add_space(4.0);
-                                        ui.label(RichText::new(preset.description).size(11.0).color(Color32::LIGHT_GRAY));
+                                        ui.label(
+                                            RichText::new(preset.description)
+                                                .size(11.0)
+                                                .color(Color32::LIGHT_GRAY),
+                                        );
                                     });
                                 });
 

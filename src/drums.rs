@@ -205,10 +205,13 @@ impl XrossDrumsEmulator {
                 &mut self.ride_bell_fx,
             );
 
-            // マスターFXを適用（簡易的なparams変換）
-            let master_params = PartParams::default();
-            buffer.output(0)[i] = self.master_fx.process(left, &master_params, sample_rate);
-            buffer.output(1)[i] = self.master_fx.process(right, &master_params, sample_rate);
+            // マスターFXを適用
+            buffer.output(0)[i] =
+                self.master_fx
+                    .process_master(left, &self.params.master, sample_rate);
+            buffer.output(1)[i] =
+                self.master_fx
+                    .process_master(right, &self.params.master, sample_rate);
 
             self.state.process_advance(1);
         }
@@ -269,7 +272,7 @@ impl XrossDrumsEmulator {
             );
         }
 
-        combined = ctx.fx.process(combined, ctx.params, ctx.sample_rate);
+        combined = ctx.fx.process_part(combined, ctx.params, ctx.sample_rate);
 
         let pan = ctx.params.pan.pan.value() / 100.0;
         let left_gain = (1.0f32 - pan).clamp(0.0, 1.0);

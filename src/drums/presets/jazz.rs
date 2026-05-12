@@ -1,7 +1,10 @@
 use crate::params::saturation::SaturationType;
 use crate::presets::KitBlend;
 
-use super::{CompPreset, DrumPreset, EqBandPreset, EqPreset, FxPreset, PartPreset, SaturationPreset, SynthPreset, TransientPreset};
+use super::{
+    CompPreset, DrumPreset, EqBandPreset, EqPreset, FxPreset, PartPreset, SaturationPreset,
+    SynthPreset, TransientPreset,
+};
 
 const DEFAULT_COMP: CompPreset = CompPreset {
     threshold: 0.0,
