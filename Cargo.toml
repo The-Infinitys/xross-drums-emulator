@@ -19,7 +19,7 @@ required-features = ["standalone"]
 # 2018 and distributing VST2 plugins may require agreement with
 # Steinberg's licensing terms.
 [features]
-default = ["clap", "vst3", "lv2", "standalone"]
+default = ["clap", "vst3", "standalone"]
 clap = ["dep:truce-clap", "dep:clap-sys"]
 vst3 = ["dep:truce-vst3"]
 lv2 = ["dep:truce-lv2"]
