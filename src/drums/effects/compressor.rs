@@ -1,4 +1,5 @@
 use crate::params::comp::CompressorParams;
+use truce::params::FloatParamReadF32;
 
 pub struct Compressor {
     envelope: f32,

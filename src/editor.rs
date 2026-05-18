@@ -1,6 +1,6 @@
 use crate::events::NoteEvents;
 use crate::params::XrossDrumsEmulatorParams;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 mod background;
 mod logo;
@@ -25,7 +25,10 @@ struct EditorState {
     presets: PresetsUI,
 }
 
-pub fn editor(params: Arc<XrossDrumsEmulatorParams>, events: Arc<NoteEvents>) -> EguiEditor {
+pub fn editor(
+    params: Arc<XrossDrumsEmulatorParams>,
+    events: Arc<NoteEvents>,
+) -> EguiEditor<XrossDrumsEmulatorParams> {
     let width = 1024;
     let height = 640;
 
@@ -34,47 +37,51 @@ pub fn editor(params: Arc<XrossDrumsEmulatorParams>, events: Arc<NoteEvents>) ->
         tabs: Tabs::new(),
         pad_grid: PadGrid::new(events),
         settings: Settings::new(params.clone()),
-        presets: PresetsUI::new(params),
+        presets: PresetsUI::new(params.clone()),
     };
 
-    EguiEditor::new((width, height), move |egui_ctx, _truce_state| {
-        egui::CentralPanel::default()
-            .frame(Frame::NONE.fill(Color32::BLACK))
-            .show(egui_ctx, |ui| {
-                // --- 最背面: 背景アニメーション ---
-                state.background.draw(ui);
+    EguiEditor::new(
+        params.clone(),
+        (width, height),
+        move |egui_ctx, _truce_state| {
+            egui::CentralPanel::default()
+                .frame(Frame::NONE.fill(Color32::BLACK))
+                .show(egui_ctx, |ui| {
+                    // --- 最背面: 背景アニメーション ---
+                    state.background.draw(ui);
 
-                // --- 中面: メインUIレイアウト ---
-                ui.vertical_centered(|ui| {
-                    ui.add_space(10.0);
+                    // --- 中面: メインUIレイアウト ---
+                    ui.vertical_centered(|ui| {
+                        ui.add_space(10.0);
 
-                    // タイトル表示
-                    Logo::draw(ui, 60.0);
+                        // タイトル表示
+                        Logo::draw(ui, 60.0);
 
-                    ui.add_space(10.0);
+                        ui.add_space(10.0);
 
-                    // タブ切り替えボタンの描画
-                    state.tabs.draw(ui);
+                        // タブ切り替えボタンの描画
+                        state.tabs.draw(ui);
 
-                    ui.add_space(30.0);
+                        ui.add_space(30.0);
 
-                    // --- タブに応じたコンテンツの表示 ---
-                    match state.tabs.current_tab {
-                        AppTab::Pad => {
-                            // ドラムパッド画面（円形配置 & キーボード入力）
-                            state.pad_grid.draw(ui);
+                        // --- タブに応じたコンテンツの表示 ---
+                        match state.tabs.current_tab {
+                            AppTab::Pad => {
+                                // ドラムパッド画面（円形配置 & キーボード入力）
+                                state.pad_grid.draw(ui);
+                            }
+                            AppTab::Settings => {
+                                state.settings.draw(ui);
+                            }
+                            AppTab::Presets => {
+                                state.presets.draw(ui);
+                            }
                         }
-                        AppTab::Settings => {
-                            state.settings.draw(ui);
-                        }
-                        AppTab::Presets => {
-                            state.presets.draw(ui);
-                        }
-                    }
+                    });
+
+                    // 常にアニメーション（背景やパッドの発光）を動かすために再描画
+                    egui_ctx.request_repaint_after(Duration::from_millis(16));
                 });
-
-                // 常にアニメーション（背景やパッドの発光）を動かすために再描画
-                egui_ctx.request_repaint();
-            });
-    })
+        },
+    )
 }

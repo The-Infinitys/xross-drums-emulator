@@ -6,6 +6,7 @@ pub mod utils;
 
 use crate::drums::PartId;
 use crate::params::electric::ElectricParams;
+use truce::params::FloatParamReadF32;
 pub struct DrumSynth;
 
 pub struct SynthPhases<'a> {

@@ -2,6 +2,7 @@ use super::utils::SynthUtils;
 use crate::drums::PartId;
 use crate::params::electric::ElectricParams;
 use std::f32::consts::PI;
+use truce::params::FloatParamReadF32;
 
 pub fn process(
     part_id: PartId,

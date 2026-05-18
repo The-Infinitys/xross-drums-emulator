@@ -1,5 +1,5 @@
 use std::f32::consts::PI;
-use truce::params::FloatParam;
+use truce::params::{FloatParam, FloatParamReadF64};
 
 pub trait FloatParamNormalizedExt {
     fn value_normalized(&self) -> f64;
@@ -8,7 +8,7 @@ pub trait FloatParamNormalizedExt {
 
 impl FloatParamNormalizedExt for FloatParam {
     fn value_normalized(&self) -> f64 {
-        let val = self.value() as f64;
+        let val = self.value();
         let range = &self.info.range;
         range.normalize(val)
     }

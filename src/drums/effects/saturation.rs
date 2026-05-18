@@ -1,5 +1,6 @@
 use super::utils::Biquad;
 use crate::params::saturation::{SaturationParams, SaturationType};
+use truce::params::FloatParamReadF32;
 
 pub struct Saturation {
     hpf: Biquad,

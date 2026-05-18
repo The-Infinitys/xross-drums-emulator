@@ -1,4 +1,5 @@
 use crate::params::transient::TransientParams;
+use truce::params::FloatParamReadF32;
 
 pub struct TransientShaper {
     fast_env: f32,

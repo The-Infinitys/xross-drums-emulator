@@ -8,11 +8,11 @@ pub mod samples;
 mod state;
 mod synth;
 
-use crate::XrossDrumsEmulatorParams;
 use crate::drums::context::PartProcessingContext;
 use crate::editor::editor;
 use crate::events::NoteEvents;
 use crate::params::part::PartParams;
+use crate::{XrossDrumsEmulatorParams, samples::KitId};
 use effects::EffectChain;
 use samples::DrumsSamples;
 use state::{DrumState, HiHatMode, PartState};
@@ -99,10 +99,10 @@ impl XrossDrumsEmulator {
         for event in events.iter().map(|e| &e.body) {
             match event {
                 EventBody::NoteOn { note, velocity, .. } => {
-                    self.trigger_by_note(*note, *velocity);
+                    self.trigger_by_note(*note, *velocity as u16);
                 }
                 EventBody::NoteOn2 { note, velocity, .. } => {
-                    self.trigger_by_note(*note, *velocity as f32);
+                    self.trigger_by_note(*note, *velocity);
                 }
                 _ => {}
             }
@@ -226,37 +226,17 @@ impl XrossDrumsEmulator {
         }
 
         let mut combined = 0.0;
-
-        let sample_name = match ctx.part_id {
-            PartId::Kick => "bass_drum",
-            PartId::Snare => "snare_drum",
-            PartId::Rimshot => "rimshot",
-            PartId::Sidestick => "sidestick",
-            PartId::TomHigh => "tom_high",
-            PartId::TomLow => "tom_low",
-            PartId::TomFloor => "tom_floor",
-            PartId::HiHatClosed => "hihat_closed",
-            PartId::HiHatOpen => "hihat_open",
-            PartId::HiHatPedal => "hihat_pedal",
-            PartId::Crash => "crash_cymbal",
-            PartId::Ride => "ride_cymbal",
-            PartId::RideBell => "ride_bell",
-        };
-
-        for (kit_name, level_param) in [
-            ("heavy", &ctx.params.electric.heavy_level),
-            ("light", &ctx.params.electric.light_level),
-            ("medium", &ctx.params.electric.medium_level),
+        for (kit_id, level_param) in [
+            (KitId::Heavy, &ctx.params.electric.heavy_level),
+            (KitId::Light, &ctx.params.electric.light_level),
+            (KitId::Medium, &ctx.params.electric.medium_level),
         ] {
+            let sample_data = ctx.samples.get_sample_data_enum(kit_id, ctx.part_id);
             let level = level_param.value() / 100.0;
-            if level > 0.0
-                && let Some(sample_data) = ctx.samples.get_sample_data(kit_name, sample_name)
-                && ctx.state.current_sample < sample_data.len()
-            {
+            if level > 0.0 && ctx.state.current_sample < sample_data.len() {
                 combined += sample_data[ctx.state.current_sample] * ctx.state.velocity * level;
             }
         }
-
         if ctx.state.current_sample != usize::MAX {
             combined += DrumSynth::process(
                 ctx.part_id,
@@ -286,10 +266,11 @@ impl XrossDrumsEmulator {
         }
     }
 
-    fn trigger_by_note(&mut self, note: u8, velocity: f32) {
+    fn trigger_by_note(&mut self, note: u8, velocity: u16) {
         // UIへのフィードバック
-        self.events
-            .trigger_visual_by_note(note, (velocity * 127.0).clamp(0.0, 127.0) as u8);
+        let velocity = velocity as f32 / 127.0;
+        let v = velocity.clamp(0.0, 127.0) as u8;
+        self.events.trigger_visual_by_note(note, v);
 
         // 音源のトリガー
         match note {

@@ -1,7 +1,7 @@
 use crate::params::equalizer::EqualizerParams;
 use crate::utils::{FilterType, freq_to_norm, get_filter_gain, norm_to_freq};
 use egui::{self, Align2, Color32, FontId, Pos2, Rect, Stroke, Vec2};
-use truce::params::FloatParam;
+use truce::params::{FloatParam, FloatParamReadF32};
 
 pub struct EqualizerBox;
 

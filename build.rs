@@ -5,8 +5,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    truce_build::emit_plugin_env();
-
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let dest_path = out_dir.join("samples_data.rs");
     let samples_root = Path::new("samples");

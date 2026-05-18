@@ -1,3 +1,5 @@
+use truce::params::FloatParamReadF32;
+
 use super::utils::SynthUtils;
 use crate::params::electric::ElectricParams;
 use std::f32::consts::PI;

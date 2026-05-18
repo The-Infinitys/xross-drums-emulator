@@ -1,5 +1,6 @@
 use super::utils::Biquad;
 use crate::params::equalizer::EqualizerParams;
+use truce::params::FloatParamReadF32;
 
 pub struct Equalizer {
     hp: Biquad,

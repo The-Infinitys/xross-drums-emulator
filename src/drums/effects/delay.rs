@@ -1,4 +1,5 @@
 use crate::params::fx::FxParams;
+use truce::params::FloatParamReadF32;
 
 pub struct DelayEffect {
     buffer: Vec<f32>,
