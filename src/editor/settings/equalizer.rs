@@ -1,6 +1,6 @@
 use crate::params::equalizer::EqualizerParams;
 use crate::utils::{FilterType, freq_to_norm, get_filter_gain, norm_to_freq};
-use egui::{self, Align2, Color32, FontId, Pos2, Rect, Stroke, Vec2};
+use egui::{self, Align2, Color32, FontId, Popup, Pos2, Rect, Stroke, Vec2};
 use truce::params::{FloatParam, FloatParamReadF32};
 
 pub struct EqualizerBox;
@@ -289,10 +289,10 @@ impl EqualizerBox {
         // 数値設定ウィンドウ（右クリックまたはクリックでトグル）
         let popup_id = id.with("popup");
         if resp.clicked() {
-            ui.memory_mut(|m| m.toggle_popup(popup_id));
+            Popup::toggle_id(ui.ctx(), popup_id);
         }
 
-        if ui.memory(|m| m.is_popup_open(popup_id)) {
+        if Popup::is_id_open(ui.ctx(), popup_id) {
             egui::Window::new(label)
                 .id(popup_id.with("window"))
                 .fixed_pos(pos + Vec2::new(15.0, 15.0))

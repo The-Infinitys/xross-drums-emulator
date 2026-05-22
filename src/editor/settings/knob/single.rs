@@ -1,5 +1,7 @@
 use crate::utils::FloatParamNormalizedExt;
-use egui::{Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget, vec2};
+use egui::{
+    Align2, Color32, FontId, Frame, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget, vec2,
+};
 use std::f32::consts::PI;
 use truce::params::FloatParamReadF64;
 
@@ -128,7 +130,7 @@ impl<'a> Widget for SingleKnob<'a> {
                     egui::TextEdit::singleline(&mut value_text)
                         .font(FontId::monospace(10.0))
                         .horizontal_align(egui::Align::Center)
-                        .frame(false),
+                        .frame(Frame::NONE),
                 );
 
                 if res.changed() {

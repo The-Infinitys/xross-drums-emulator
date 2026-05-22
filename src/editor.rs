@@ -1,6 +1,6 @@
 use crate::events::NoteEvents;
 use crate::params::XrossDrumsEmulatorParams;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 mod background;
 mod logo;
@@ -46,7 +46,7 @@ pub fn editor(
         move |egui_ctx, _truce_state| {
             egui::CentralPanel::default()
                 .frame(Frame::NONE.fill(Color32::BLACK))
-                .show(egui_ctx, |ui| {
+                .show_inside(egui_ctx, |ui| {
                     // --- 最背面: 背景アニメーション ---
                     state.background.draw(ui);
 
@@ -78,9 +78,6 @@ pub fn editor(
                             }
                         }
                     });
-
-                    // 常にアニメーション（背景やパッドの発光）を動かすために再描画
-                    egui_ctx.request_repaint_after(Duration::from_millis(16));
                 });
         },
     )
