@@ -15,8 +15,8 @@ impl PluginLogic for XrossDrumsEmulator {
     ) -> ProcessStatus {
         self.process(buffer, events, context)
     }
-    fn custom_editor(&self) -> Option<Box<dyn Editor>> {
-        Some(self.editor())
+    fn editor(&self) -> Box<dyn Editor> {
+        self.editor()
     }
     fn bus_layouts() -> Vec<BusLayout> {
         vec![BusLayout::new().with_output("Main", ChannelConfig::Stereo)]
